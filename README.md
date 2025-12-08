@@ -47,6 +47,19 @@ pnpm run seed:moderator
 ## Документация
 - Локальная админ-документация находится в `DOCS_SITE_ADMIN.md` (файл по умолчанию игнорируется в репозитории).
 
+## GitHub Pages (main/docs) — автоматический деплой
+Сайт публикуется в `main/docs` с помощью GitHub Actions. Workflow `Build & Publish docs to main/docs` автоматически собирает фронтенд и обновляет папку `docs/` в ветке `main`.
+
+Локально можно обновить `docs/` и запушить:
+```bash
+pnpm run build:docs
+git add docs
+git commit -m "chore(docs): update docs [skip ci]" || echo "no docs changes"
+git push origin main
+```
+
+После пуша в `main` в Pages (Settings → Pages) установите `Source: main`, `Folder: / (root)` и откройте `https://<username>.github.io/blozhik/`.
+
 ## Предупреждения
 - Если секрет уже попал в историю Git, используйте `git filter-repo` или BFG для очистки истории (внимательно — операция меняет историю и требует force-push и координации с командой).
 
