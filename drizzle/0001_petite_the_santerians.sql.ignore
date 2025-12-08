@@ -1,0 +1,65 @@
+CREATE TABLE `comments` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`postId` int NOT NULL,
+	`userId` int NOT NULL,
+	`content` text NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `comments_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `likes` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`postId` int NOT NULL,
+	`userId` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `likes_id` PRIMARY KEY(`id`),
+	CONSTRAINT `post_user_unique` UNIQUE(`postId`,`userId`)
+);
+--> statement-breakpoint
+CREATE TABLE `postTags` (
+	`postId` int NOT NULL,
+	`tagId` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `postTags_postId_tagId_pk` PRIMARY KEY(`postId`,`tagId`)
+);
+--> statement-breakpoint
+CREATE TABLE `posts` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`userId` int NOT NULL,
+	`title` varchar(200) NOT NULL,
+	`content` text NOT NULL,
+	`contentType` enum('plaintext','markdown') NOT NULL DEFAULT 'plaintext',
+	`excerpt` text,
+	`published` boolean NOT NULL DEFAULT false,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `posts_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `tags` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`name` varchar(50) NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	CONSTRAINT `tags_id` PRIMARY KEY(`id`),
+	CONSTRAINT `tags_name_unique` UNIQUE(`name`)
+);
+--> statement-breakpoint
+ALTER TABLE `users` ADD `username` varchar(100);--> statement-breakpoint
+ALTER TABLE `users` ADD `passwordHash` text;--> statement-breakpoint
+ALTER TABLE `users` ADD `bio` text;--> statement-breakpoint
+ALTER TABLE `users` ADD `avatarUrl` text;--> statement-breakpoint
+ALTER TABLE `users` ADD CONSTRAINT `users_email_unique` UNIQUE(`email`);--> statement-breakpoint
+ALTER TABLE `users` ADD CONSTRAINT `users_username_unique` UNIQUE(`username`);--> statement-breakpoint
+CREATE INDEX `post_id_idx` ON `comments` (`postId`);--> statement-breakpoint
+CREATE INDEX `user_id_idx` ON `comments` (`userId`);--> statement-breakpoint
+CREATE INDEX `post_id_idx` ON `likes` (`postId`);--> statement-breakpoint
+CREATE INDEX `user_id_idx` ON `likes` (`userId`);--> statement-breakpoint
+CREATE INDEX `post_id_idx` ON `postTags` (`postId`);--> statement-breakpoint
+CREATE INDEX `tag_id_idx` ON `postTags` (`tagId`);--> statement-breakpoint
+CREATE INDEX `user_id_idx` ON `posts` (`userId`);--> statement-breakpoint
+CREATE INDEX `published_idx` ON `posts` (`published`);--> statement-breakpoint
+CREATE INDEX `created_at_idx` ON `posts` (`createdAt`);--> statement-breakpoint
+CREATE INDEX `name_idx` ON `tags` (`name`);--> statement-breakpoint
+CREATE INDEX `email_idx` ON `users` (`email`);--> statement-breakpoint
+CREATE INDEX `username_idx` ON `users` (`username`);
