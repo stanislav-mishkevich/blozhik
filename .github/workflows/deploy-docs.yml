@@ -31,6 +31,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build client
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: pnpm run build:client
 
       - name: Replace docs/ with built site
@@ -38,6 +40,8 @@ jobs:
           rm -rf docs
           mkdir -p docs
           cp -a dist/public/. docs/
+          # Prevent GitHub Pages from processing the site with Jekyll
+          touch docs/.nojekyll
 
       - name: Commit and push docs (if changed)
         if: github.actor != 'github-actions[bot]'

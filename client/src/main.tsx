@@ -46,10 +46,14 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+// Prefer explicit API URL from environment; fallback to relative path for dev/local server
+const API_URL = import.meta.env.VITE_API_URL ?? 
+  (typeof window !== 'undefined' ? `${window.location.origin}/api/trpc` : '/api/trpc');
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: API_URL,
       transformer: superjson,
       fetch(input, init) {
         return globalThis.fetch(input, {

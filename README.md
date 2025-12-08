@@ -1,3 +1,12 @@
+## Важный момент: API backend
+Этот проект — fullstack (frontend + server). GitHub Pages отдаёт только статические файлы и не запускает API. В продакшн вам нужно отдельно задеплоить backend (например, Vercel, Netlify Functions, Render, Heroku) и указать клиенту базовый URL API при сборке.
+
+При сборке можно задать URL API через переменную окружения `VITE_API_URL`. Пример локального билда:
+```bash
+VITE_API_URL=https://api.yourdomain.com pnpm run build:docs
+```
+
+Для автоматического деплоя через GitHub Actions добавьте secret `VITE_API_URL` в репозиторий (Settings → Secrets) — workflow передаст его в сборку.
 # Blozhik
 
 Коротко: Blozhik — простой блог/новостной движок (frontend + backend) с локальной sqlite базой и утилитами для разработки.
