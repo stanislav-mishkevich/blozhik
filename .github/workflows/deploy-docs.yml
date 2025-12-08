@@ -1,0 +1,53 @@
+name: Build & Publish docs to main/docs
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build client
+        run: pnpm run build:client
+
+      - name: Replace docs/ with built site
+        run: |
+          rm -rf docs
+          mkdir -p docs
+          cp -a dist/public/. docs/
+
+      - name: Commit and push docs (if changed)
+        if: github.actor != 'github-actions[bot]'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs
+          if git diff --staged --quiet; then
+            echo "No docs changes to commit"
+          else
+            git commit -m "chore(docs): update docs from build [skip ci]"
+            git push origin HEAD:main
+          fi
