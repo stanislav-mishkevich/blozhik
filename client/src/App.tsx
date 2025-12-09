@@ -38,6 +38,7 @@ import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminCreatePost from "./pages/AdminCreatePost";
 import AdminCreateUser from "./pages/AdminCreateUser";
 import AdminSettings from "./pages/AdminSettings";
+import AdminGuard from "./components/AdminGuard";
 import Notifications from "./pages/Notifications";
 
 function Router() {
@@ -58,21 +59,51 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/search" component={Search} />
       <Route path="/analytics" component={Analytics} />
-      <Route path="/admin" component={AdminDashboard} />
-      <Route path="/admin/create-post" component={AdminCreatePost} />
-      <Route path="/admin/create-user" component={AdminCreateUser} />
-      <Route path="/admin/users" component={AdminUsers} />
-      <Route path="/admin/roles" component={AdminRoles} />
-      <Route path="/admin/bans" component={AdminBans} />
-      <Route path="/admin/posts" component={AdminPosts} />
-      <Route path="/admin/comments" component={AdminComments} />
-      <Route path="/admin/reports" component={AdminReports} />
-      <Route path="/admin/statistics" component={AdminStatistics} />
-      <Route path="/admin/activity-logs" component={AdminActivityLogs} />
-      <Route path="/admin/audit-logs" component={AdminAuditLogs} />
-      <Route path="/admin/announcements" component={AdminAnnouncements} />
-      <Route path="/admin/analytics" component={AdminAnalytics} />
-      <Route path="/admin/settings" component={AdminSettings} />
+      <Route path="/admin" component={() => (
+        <AdminGuard minRole="moderator"><AdminDashboard /></AdminGuard>
+      )} />
+      <Route path="/admin/create-post" component={() => (
+        <AdminGuard minRole="admin"><AdminCreatePost /></AdminGuard>
+      )} />
+      <Route path="/admin/create-user" component={() => (
+        <AdminGuard minRole="superadmin"><AdminCreateUser /></AdminGuard>
+      )} />
+      <Route path="/admin/users" component={() => (
+        <AdminGuard minRole="moderator"><AdminUsers /></AdminGuard>
+      )} />
+      <Route path="/admin/roles" component={() => (
+        <AdminGuard minRole="admin"><AdminRoles /></AdminGuard>
+      )} />
+      <Route path="/admin/bans" component={() => (
+        <AdminGuard minRole="moderator"><AdminBans /></AdminGuard>
+      )} />
+      <Route path="/admin/posts" component={() => (
+        <AdminGuard minRole="moderator"><AdminPosts /></AdminGuard>
+      )} />
+      <Route path="/admin/comments" component={() => (
+        <AdminGuard minRole="moderator"><AdminComments /></AdminGuard>
+      )} />
+      <Route path="/admin/reports" component={() => (
+        <AdminGuard minRole="moderator"><AdminReports /></AdminGuard>
+      )} />
+      <Route path="/admin/statistics" component={() => (
+        <AdminGuard minRole="moderator"><AdminStatistics /></AdminGuard>
+      )} />
+      <Route path="/admin/activity-logs" component={() => (
+        <AdminGuard minRole="admin"><AdminActivityLogs /></AdminGuard>
+      )} />
+      <Route path="/admin/audit-logs" component={() => (
+        <AdminGuard minRole="admin"><AdminAuditLogs /></AdminGuard>
+      )} />
+      <Route path="/admin/announcements" component={() => (
+        <AdminGuard minRole="moderator"><AdminAnnouncements /></AdminGuard>
+      )} />
+      <Route path="/admin/analytics" component={() => (
+        <AdminGuard minRole="moderator"><AdminAnalytics /></AdminGuard>
+      )} />
+      <Route path="/admin/settings" component={() => (
+        <AdminGuard minRole="superadmin"><AdminSettings /></AdminGuard>
+      )} />
       <Route path="/404" component={NotFound} />
       <Route path="/403" component={Forbidden} />
       <Route path="/500" component={ServerError} />
