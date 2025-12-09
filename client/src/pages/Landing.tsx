@@ -198,7 +198,7 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-8 px-4 bg-black text-white">
         <div className="container mx-auto text-center">
-          <p className="text-sm">© 2024 BLOZHIK. A creative space for sharing knowledge.</p>
+          <p className="text-sm">© {new Date().getFullYear()} BLOZHIK. A creative space for sharing knowledge.</p>
         </div>
       </footer>
     </div>

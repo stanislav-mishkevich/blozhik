@@ -1,4 +1,15 @@
 import "dotenv/config";
+// Enforce minimum Node.js version to avoid runtime errors (e.g., Vite uses crypto.hash on Node 20+)
+const [major, minor, patch] = process.versions.node.split('.').map(Number);
+const MIN_MAJOR = 20;
+const MIN_MINOR = 19;
+if (major < MIN_MAJOR || (major === MIN_MAJOR && minor < MIN_MINOR)) {
+  console.error(`\nERROR: Unsupported Node.js version ${process.versions.node}.`);
+  console.error(`This project requires Node.js >= ${MIN_MAJOR}.${MIN_MINOR}.0 (recommended: Node 20.19+).`);
+  console.error("Please upgrade your Node.js version (nvm, volta, or Homebrew can be used).");
+  console.error("Example with nvm: nvm install 20 && nvm use 20\n");
+  process.exit(1);
+}
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -21,7 +32,7 @@ function isPortAvailable(port: number): Promise<boolean> {
   });
 }
 
-async function findAvailablePort(startPort: number = 3000): Promise<number> {
+async function findAvailablePort(startPort: number = 3030): Promise<number> {
   for (let port = startPort; port < startPort + 20; port++) {
     if (await isPortAvailable(port)) {
       return port;
@@ -118,8 +129,18 @@ async function startServer() {
     serveStatic(app);
   }
 
-  const preferredPort = parseInt(process.env.PORT || "3000");
-  const port = await findAvailablePort(preferredPort);
+  const preferredPort = parseInt(process.env.PORT || "3030");
+  let port: number;
+  // If PORT is explicitly provided in environment, refuse to fallback to a different port
+  if (process.env.PORT) {
+    if (!(await isPortAvailable(preferredPort))) {
+      console.error(`Port ${preferredPort} is busy, please free the port or set a different PORT in your environment.`);
+      process.exit(1);
+    }
+    port = preferredPort;
+  } else {
+    port = await findAvailablePort(preferredPort);
+  }
 
   if (port !== preferredPort) {
     console.log(`Port ${preferredPort} is busy, using port ${port} instead`);

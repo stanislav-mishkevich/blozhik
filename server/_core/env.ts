@@ -11,6 +11,7 @@ export const ENV = {
   s3Region: process.env.S3_REGION ?? "",
   s3AccessKeyId: process.env.S3_ACCESS_KEY_ID ?? "",
   s3SecretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? "",
+  baseUrl: process.env.BASE_URL ?? `http://localhost:${process.env.PORT ?? '3030'}`,
   sendNotificationEmails: process.env.SEND_NOTIFICATION_EMAILS === '1',
   smtpUrl: process.env.SMTP_URL ?? "",
   smtpFrom: process.env.SMTP_FROM ?? "",
