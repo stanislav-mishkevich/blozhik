@@ -1133,6 +1133,18 @@ export async function markAllNotificationsRead(userId: number) {
   await db.update(notifications).set({ read: 1 }).where(eq(notifications.userId, userId));
 }
 
+export async function deleteNotification(notificationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(notifications).where(eq(notifications.id, notificationId));
+}
+
+export async function deleteAllNotifications(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(notifications).where(eq(notifications.userId, userId));
+}
+
 export async function getUnreadNotificationCount(userId: number) {
   const db = await getDb();
   if (!db) return 0;
@@ -1749,6 +1761,19 @@ export async function getActiveAnnouncements(userId?: number) {
     
     // Check target audience
     if (announcement.targetAudience === 'all') return true;
+    
+    // Check if specific users are targeted
+    if (announcement.targetUserIds) {
+      try {
+        const targetIds = JSON.parse(announcement.targetUserIds);
+        if (Array.isArray(targetIds) && userId && targetIds.includes(userId)) {
+          return true;
+        }
+      } catch (e) {
+        console.error('Failed to parse targetUserIds', e);
+      }
+    }
+    
     if (announcement.targetAudience === 'admins' && userId) {
       // TODO: check if user is admin
       return false; // For now, skip admin-only announcements in public API
@@ -1762,7 +1787,7 @@ export async function getActiveAnnouncements(userId?: number) {
   });
 }
 
-export async function createAnnouncement(input: { title: string; content: string; type: string; startDate?: string; endDate?: string; targetAudience?: string }) {
+export async function createAnnouncement(input: { title: string; content: string; type: string; startDate?: string; endDate?: string; targetAudience?: string; targetUserIds?: string }) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   const [result] = await db.insert(announcements).values(input).returning();

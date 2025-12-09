@@ -908,13 +908,19 @@ export const appRouter = router({
         await db.markNotificationRead(input.notificationId);
         return { success: true };
       }),
+    delete: protectedProcedure
+      .input(z.object({ notificationId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteNotification(input.notificationId);
+        return { success: true };
+      }),
     unreadCount: protectedProcedure
       .query(async ({ ctx }) => {
         return { count: await db.getUnreadNotificationCount(ctx.user.id) };
       }),
     clearAll: protectedProcedure
       .mutation(async ({ ctx }) => {
-        await db.markAllNotificationsRead(ctx.user.id);
+        await db.deleteAllNotifications(ctx.user.id);
         return { success: true };
       }),
   }),
@@ -1301,6 +1307,7 @@ export const appRouter = router({
           startDate: z.string().optional(),
           endDate: z.string().optional(),
           targetAudience: z.enum(['all', 'new_users', 'admins']).optional(),
+          targetUserIds: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
           // TODO: Log to audit
@@ -1315,6 +1322,7 @@ export const appRouter = router({
           startDate: z.string().optional(),
           endDate: z.string().optional(),
           targetAudience: z.enum(['all', 'new_users', 'admins']).optional(),
+          targetUserIds: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
           return await db.updateAnnouncement(input.id, input);

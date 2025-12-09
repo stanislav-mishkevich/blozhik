@@ -277,6 +277,7 @@ export const announcements = sqliteTable("announcements", {
   startDate: text("startDate"),
   endDate: text("endDate"),
   targetAudience: text("targetAudience").default('all'),
+  targetUserIds: text("targetUserIds"), // JSON array of user IDs
   createdAt: text("createdAt").default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => ({
   typeIdx: index('announcements_type_idx').on(table.type),
