@@ -825,6 +825,14 @@ export const appRouter = router({
         return await db.getBookmarksForUser(userId);
       }),
   }),
+
+  // ============= ANNOUNCEMENT ROUTER (PUBLIC) =============
+  announcement: router({
+    getActive: publicProcedure
+      .query(async ({ ctx }) => {
+        return await db.getActiveAnnouncements(ctx.user?.id);
+      }),
+  }),
   
   // ============= TAG ROUTER =============
   tag: router({

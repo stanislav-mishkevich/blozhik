@@ -1731,6 +1731,37 @@ export async function getAnnouncements() {
   return db.select().from(announcements).orderBy(desc(announcements.createdAt));
 }
 
+export async function getActiveAnnouncements(userId?: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const now = new Date().toISOString();
+  const allAnnouncements = await db.select().from(announcements).orderBy(desc(announcements.createdAt));
+  
+  // Filter active announcements
+  return allAnnouncements.filter(announcement => {
+    // Check date range
+    const isActive = 
+      (!announcement.startDate || announcement.startDate <= now) &&
+      (!announcement.endDate || announcement.endDate >= now);
+    
+    if (!isActive) return false;
+    
+    // Check target audience
+    if (announcement.targetAudience === 'all') return true;
+    if (announcement.targetAudience === 'admins' && userId) {
+      // TODO: check if user is admin
+      return false; // For now, skip admin-only announcements in public API
+    }
+    if (announcement.targetAudience === 'new_users' && userId) {
+      // TODO: check if user is new (e.g., created within last 7 days)
+      return true;
+    }
+    
+    return announcement.targetAudience === 'all';
+  });
+}
+
 export async function createAnnouncement(input: { title: string; content: string; type: string; startDate?: string; endDate?: string; targetAudience?: string }) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
