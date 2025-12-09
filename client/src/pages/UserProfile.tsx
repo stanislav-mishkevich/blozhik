@@ -336,37 +336,34 @@ export default function UserProfile() {
               </div>
 
               {/* Stats */}
-              <div className="flex flex-wrap gap-6">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-gray-600" />
-                  <span className="font-semibold">{profile.stats.postCount}</span>
-                  <span className="text-gray-600">Posts</span>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border-2 border-black">
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{profile.stats.postCount}</div>
+                  <div className="text-sm text-gray-600">Posts</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Heart className="h-5 w-5" style={{ color: "var(--sketch-pink)" }} />
-                  <span className="font-semibold">{profile.stats.totalLikes}</span>
-                  <span className="text-gray-600">Likes Received</span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{profile.stats.totalLikes}</div>
+                  <div className="text-sm text-gray-600">Likes</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="h-5 w-5 text-gray-600" />
-                  <span className="font-semibold">{profile.stats.commentCount}</span>
-                  <span className="text-gray-600">Comments</span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{profile.stats.commentCount}</div>
+                  <div className="text-sm text-gray-600">Comments</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{profile.followers}</span>
-                  <span className="text-gray-600">Followers</span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{profile.followers}</div>
+                  <div className="text-sm text-gray-600">Followers</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{profile.following}</span>
-                  <span className="text-gray-600">Following</span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{profile.following}</div>
+                  <div className="text-sm text-gray-600">Following</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{profile.bookmarks}</span>
-                  <span className="text-gray-600">Bookmarks</span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{profile.bookmarks}</div>
+                  <div className="text-sm text-gray-600">Bookmarks</div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{profile.views ?? 0}</span>
-                  <span className="text-gray-600">Views (30d)</span>
+                <div className="text-center">
+                  <div className="text-2xl font-bold">{profile.views ?? 0}</div>
+                  <div className="text-sm text-gray-600">Views (30d)</div>
                 </div>
               </div>
             </div>
@@ -477,119 +474,87 @@ export default function UserProfile() {
           {isOwnProfile && (
             <TabsContent value="analytics" className="bg-white border-2 border-black rounded-lg p-6 md:p-8 sketch-shadow">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold">Analytics Overview</h2>
+                <h2 className="text-2xl font-bold">Your Performance</h2>
                 <Button
                   onClick={() => setLocation("/analytics")}
                   variant="outline"
                   className="border-2 border-black"
                 >
-                  View Detailed Analytics
+                  Detailed Analytics
                 </Button>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="border-2 border-black rounded-lg p-6 sketch-shadow-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="h-8 w-8 text-blue-600" />
-                    <div>
-                      <div className="text-3xl font-bold">{profile.stats.postCount}</div>
-                      <div className="text-sm text-gray-600">Total Posts</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-2 border-black rounded-lg p-6 sketch-shadow-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Heart className="h-8 w-8 text-pink-600" />
-                    <div>
-                      <div className="text-3xl font-bold">{profile.stats.totalLikes}</div>
-                      <div className="text-sm text-gray-600">Total Likes</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-2 border-black rounded-lg p-6 sketch-shadow-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <MessageCircle className="h-8 w-8 text-green-600" />
-                    <div>
-                      <div className="text-3xl font-bold">{profile.stats.commentCount}</div>
-                      <div className="text-sm text-gray-600">Total Comments</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-2 border-black rounded-lg p-6 sketch-shadow-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <TrendingUp className="h-8 w-8 text-purple-600" />
-                    <div>
-                      <div className="text-3xl font-bold">{profile.views ?? 0}</div>
-                      <div className="text-sm text-gray-600">Views (30d)</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-2 border-black rounded-lg p-6 sketch-shadow-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Users className="h-8 w-8 text-indigo-600" />
-                    <div>
-                      <div className="text-3xl font-bold">{profile.followers}</div>
-                      <div className="text-sm text-gray-600">Followers</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border-2 border-black rounded-lg p-6 sketch-shadow-sm">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Bookmark className="h-8 w-8 text-orange-600" />
-                    <div>
-                      <div className="text-3xl font-bold">{profile.bookmarks}</div>
-                      <div className="text-sm text-gray-600">Bookmarks</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {profile.stats.totalLikes > 0 && (
-                <div className="mt-6 border-2 border-black rounded-lg p-6 sketch-shadow-sm">
-                  <h3 className="font-bold mb-4">Engagement Metrics</h3>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Avg Likes per Post</span>
-                        <span className="font-semibold">
-                          {profile.stats.postCount > 0 
-                            ? (profile.stats.totalLikes / profile.stats.postCount).toFixed(1)
-                            : 0}
-                        </span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-pink-500"
-                          style={{ 
-                            width: `${Math.min(100, (profile.stats.totalLikes / profile.stats.postCount / 10) * 100)}%` 
-                          }}
-                        />
+              {profile.stats.postCount > 0 ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="border-2 border-black rounded-lg p-4 sketch-shadow-sm">
+                      <h3 className="font-bold mb-2">Average Engagement</h3>
+                      <div className="space-y-2">
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Likes per Post</span>
+                            <span className="font-semibold">
+                              {(profile.stats.totalLikes / profile.stats.postCount).toFixed(1)}
+                            </span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-pink-500"
+                              style={{ 
+                                width: `${Math.min(100, (profile.stats.totalLikes / profile.stats.postCount / 10) * 100)}%` 
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span>Comments per Post</span>
+                            <span className="font-semibold">
+                              {(profile.stats.commentCount / profile.stats.postCount).toFixed(1)}
+                            </span>
+                          </div>
+                          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-green-500"
+                              style={{ 
+                                width: `${Math.min(100, (profile.stats.commentCount / profile.stats.postCount / 5) * 100)}%` 
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="flex justify-between text-sm mb-1">
-                        <span>Avg Comments per Post</span>
-                        <span className="font-semibold">
-                          {profile.stats.postCount > 0 
-                            ? (profile.stats.commentCount / profile.stats.postCount).toFixed(1)
-                            : 0}
-                        </span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-green-500"
-                          style={{ 
-                            width: `${Math.min(100, (profile.stats.commentCount / profile.stats.postCount / 5) * 100)}%` 
-                          }}
-                        />
+
+                    <div className="border-2 border-black rounded-lg p-4 sketch-shadow-sm">
+                      <h3 className="font-bold mb-2">Content Stats</h3>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total Engagement</span>
+                          <span className="font-bold">{profile.stats.totalLikes + profile.stats.commentCount}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Total Views (30d)</span>
+                          <span className="font-bold">{profile.views ?? 0}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Followers</span>
+                          <span className="font-bold">{profile.followers}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  <div className="bg-blue-50 border-2 border-blue-500 rounded-lg p-4">
+                    <p className="text-sm text-blue-900">
+                      💡 <strong>Tip:</strong> Visit the detailed analytics page to see charts, trends, and more insights about your content performance.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-500">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="font-semibold">No analytics data yet</p>
+                  <p className="text-sm mt-2">Start creating posts to see your performance metrics</p>
                 </div>
               )}
             </TabsContent>
