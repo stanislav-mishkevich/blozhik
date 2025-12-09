@@ -1404,6 +1404,7 @@ export async function getUsers(filters: { page?: number; limit?: number; search?
     isBanned: users.isBanned,
     banReason: users.banReason,
     bannedAt: users.bannedAt,
+    bannedUntil: users.bannedUntil,
     createdAt: users.createdAt,
     lastSignedIn: users.lastSignedIn,
   }).from(users);
@@ -1432,9 +1433,26 @@ export async function getUsers(filters: { page?: number; limit?: number; search?
   }
 
   const usersList = await query.limit(limit).offset(offset).orderBy(desc(users.createdAt));
+  
+  // Check for expired bans and auto-unban
+  const now = new Date();
+  const updatedUsers = await Promise.all(
+    usersList.map(async (user) => {
+      if (user.isBanned && user.bannedUntil) {
+        const expiryDate = new Date(user.bannedUntil);
+        if (now >= expiryDate) {
+          // Auto-unban
+          await unbanUser(user.id);
+          return { ...user, isBanned: 0, banReason: null, bannedAt: null, bannedUntil: null };
+        }
+      }
+      return user;
+    })
+  );
+  
   const total = await db.select({ count: count() }).from(users);
 
-  return { users: usersList, total: total[0].count };
+  return { users: updatedUsers, total: total[0].count };
 }
 
 export async function changeUserRole(userId: number, role: string) {
@@ -1604,9 +1622,42 @@ export async function getAdminStatsEngagement(days: number = 30) {
   const totalCommentsRes = await db.select({ totalComments: sql<number>`count(*)` }).from(comments).innerJoin(posts, eq(comments.postId, posts.id)).where(sql`${posts.createdAt} >= ${sinceIso}`);
   const totalComments = Number(totalCommentsRes[0]?.totalComments || 0);
 
+  // Top categories
+  const topCategoriesRes = await db.select({
+    categoryId: posts.categoryId,
+    categoryName: categories.name,
+    count: sql<number>`count(*)`
+  })
+    .from(posts)
+    .innerJoin(categories, eq(posts.categoryId, categories.id))
+    .where(sql`${posts.createdAt} >= ${sinceIso}`)
+    .groupBy(posts.categoryId, categories.name)
+    .orderBy(sql`count(*) DESC`)
+    .limit(5);
+
+  const topCategories = topCategoriesRes.map(cat => ({
+    name: cat.categoryName,
+    count: Number(cat.count)
+  }));
+
+  // Most active hour (posts created)
+  const hourActivityRes = await db.select({
+    hour: sql<number>`CAST(strftime('%H', ${posts.createdAt}) AS INTEGER)`,
+    count: sql<number>`count(*)`
+  })
+    .from(posts)
+    .where(sql`${posts.createdAt} >= ${sinceIso}`)
+    .groupBy(sql`strftime('%H', ${posts.createdAt})`)
+    .orderBy(sql`count(*) DESC`)
+    .limit(1);
+
+  const mostActiveHour = hourActivityRes.length > 0 ? Number(hourActivityRes[0].hour) : 14;
+
   return {
     avgLikesPerPost: totalPosts > 0 ? totalLikes / totalPosts : 0,
     avgCommentsPerPost: totalPosts > 0 ? totalComments / totalPosts : 0,
+    topCategories,
+    mostActiveHour,
   };
 }
 

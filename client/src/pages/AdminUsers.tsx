@@ -14,6 +14,7 @@ interface User {
   isBanned: number;
   banReason: string | null;
   bannedAt: string | null;
+  bannedUntil: string | null;
   createdAt: string;
   lastSignedIn: string;
 }

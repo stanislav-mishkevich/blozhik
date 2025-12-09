@@ -67,8 +67,8 @@ export default function AdminStatistics() {
     engagement: {
       avgLikesPerPost: engagementData?.avgLikesPerPost || 0,
       avgCommentsPerPost: engagementData?.avgCommentsPerPost || 0,
-      mostActiveHour: 14,
-      topCategories: []
+      mostActiveHour: engagementData?.mostActiveHour || 14,
+      topCategories: engagementData?.topCategories || []
     },
     userMetrics: {
       retentionRate: 0,
