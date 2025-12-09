@@ -1,6 +1,8 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
+import Forbidden from "@/pages/Forbidden";
+import ServerError from "@/pages/ServerError";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import BanNotification from "./components/BanNotification";
@@ -11,6 +13,7 @@ import { useAuthState } from "./hooks/useAuthState";
 import Landing from "./pages/Landing";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ForgotPassword from "./pages/ForgotPassword";
 import Feed from "./pages/Feed";
 import Write from "./pages/Write";
 import PostView from "./pages/PostView";
@@ -43,6 +46,7 @@ function Router() {
       <Route path="/" component={Landing} />
       <Route path="/register" component={Register} />
       <Route path="/login" component={Login} />
+      <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/feed" component={Feed} />
       <Route path="/write" component={Write} />
       <Route path="/posts/:id" component={PostView} />
@@ -70,6 +74,8 @@ function Router() {
       <Route path="/admin/analytics" component={AdminAnalytics} />
       <Route path="/admin/settings" component={AdminSettings} />
       <Route path="/404" component={NotFound} />
+      <Route path="/403" component={Forbidden} />
+      <Route path="/500" component={ServerError} />
       <Route component={NotFound} />
     </Switch>
   );

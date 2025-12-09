@@ -1527,14 +1527,14 @@ export async function getAdminStatistics() {
   const totalLikes = Number(likesCount[0].count) + Number(reactionsCount[0].count);
   
   // Banned users count
-  const bannedCount = await db.select({ count: count() }).from(users).where(eq(users.isBanned, true));
+  const bannedCount = await db.select({ count: count() }).from(users).where(eq(users.isBanned, 1));
   
   // Active users in last 7 days (users who created posts, comments, or likes)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoIso = sevenDaysAgo.toISOString();
   
-  const activeUsersFromPosts = await db.selectDistinct({ userId: posts.authorId }).from(posts).where(sql`${posts.createdAt} >= ${sevenDaysAgoIso}`);
+  const activeUsersFromPosts = await db.selectDistinct({ userId: posts.userId }).from(posts).where(sql`${posts.createdAt} >= ${sevenDaysAgoIso}`);
   const activeUsersFromComments = await db.selectDistinct({ userId: comments.userId }).from(comments).where(sql`${comments.createdAt} >= ${sevenDaysAgoIso}`);
   const activeUsersFromLikes = await db.selectDistinct({ userId: likes.userId }).from(likes).where(sql`${likes.createdAt} >= ${sevenDaysAgoIso}`);
   
@@ -1658,6 +1658,69 @@ export async function getAdminStatsEngagement(days: number = 30) {
     avgCommentsPerPost: totalPosts > 0 ? totalComments / totalPosts : 0,
     topCategories,
     mostActiveHour,
+  };
+}
+
+export async function getAdminStatsUserMetrics(days: number = 30) {
+  const db = await getDb();
+  if (!db) return {
+    retentionRate: 0,
+    churnRate: 0,
+    newUsersPerDay: 0,
+    avgPostsPerUser: 0,
+    avgCommentsPerUser: 0,
+  };
+
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+  const sinceIso = since.toISOString();
+
+  // Total users and new users in period
+  const totalUsersRes = await db.select({ count: sql<number>`count(*)` }).from(users);
+  const totalUsers = Number(totalUsersRes[0]?.count || 0);
+
+  const newUsersRes = await db.select({ count: sql<number>`count(*)` }).from(users).where(sql`${users.createdAt} >= ${sinceIso}`);
+  const newUsers = Number(newUsersRes[0]?.count || 0);
+
+  // Active users in period (posted, commented, or liked)
+  const activeUsersFromPosts = await db.selectDistinct({ userId: posts.userId }).from(posts).where(sql`${posts.createdAt} >= ${sinceIso}`);
+  const activeUsersFromComments = await db.selectDistinct({ userId: comments.userId }).from(comments).where(sql`${comments.createdAt} >= ${sinceIso}`);
+  const activeUsersFromLikes = await db.selectDistinct({ userId: likes.userId }).from(likes).where(sql`${likes.createdAt} >= ${sinceIso}`);
+  
+  const uniqueActiveUsers = new Set([
+    ...activeUsersFromPosts.map(u => u.userId),
+    ...activeUsersFromComments.map(u => u.userId),
+    ...activeUsersFromLikes.map(u => u.userId)
+  ]);
+
+  const activeUsers = uniqueActiveUsers.size;
+
+  // Calculate retention (active users / total users who could be active)
+  const usersBeforePeriod = totalUsers - newUsers;
+  const retentionRate = usersBeforePeriod > 0 ? (activeUsers / usersBeforePeriod) * 100 : 0;
+
+  // Calculate churn (users who didn't engage)
+  const churnRate = usersBeforePeriod > 0 ? ((usersBeforePeriod - activeUsers) / usersBeforePeriod) * 100 : 0;
+
+  // New users per day
+  const newUsersPerDay = newUsers / days;
+
+  // Average posts and comments per user
+  const totalPostsRes = await db.select({ count: sql<number>`count(*)` }).from(posts);
+  const totalPosts = Number(totalPostsRes[0]?.count || 0);
+
+  const totalCommentsRes = await db.select({ count: sql<number>`count(*)` }).from(comments);
+  const totalComments = Number(totalCommentsRes[0]?.count || 0);
+
+  const avgPostsPerUser = totalUsers > 0 ? totalPosts / totalUsers : 0;
+  const avgCommentsPerUser = totalUsers > 0 ? totalComments / totalUsers : 0;
+
+  return {
+    retentionRate: Number(retentionRate.toFixed(1)),
+    churnRate: Number(churnRate.toFixed(1)),
+    newUsersPerDay: Number(newUsersPerDay.toFixed(2)),
+    avgPostsPerUser: Number(avgPostsPerUser.toFixed(2)),
+    avgCommentsPerUser: Number(avgCommentsPerUser.toFixed(2)),
   };
 }
 

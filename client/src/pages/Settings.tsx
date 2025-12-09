@@ -135,32 +135,22 @@ export default function Settings() {
 
     setUploadingAvatar(true);
     try {
-      // Get upload URL from server
-      const { url, key } = await avatarUploadUrlMutation.mutateAsync({ 
-        contentType: file.type 
-      });
-
-      // Upload to S3
-      const uploadResponse = await fetch(url, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload image');
-      }
-
-      // Extract the base URL (remove query params)
-      const uploadedUrl = url.split('?')[0];
-      setAvatarUrl(uploadedUrl);
-      toast.success('Avatar uploaded successfully!');
+      // Convert to base64 or use a free image hosting service
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setAvatarUrl(base64String);
+        toast.success('Avatar uploaded successfully!');
+        setUploadingAvatar(false);
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read image file');
+        setUploadingAvatar(false);
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Avatar upload error:', error);
-      toast.error('Failed to upload avatar. Using URL input instead.');
-    } finally {
+      toast.error('Failed to upload avatar');
       setUploadingAvatar(false);
     }
   };
@@ -299,20 +289,7 @@ export default function Settings() {
                   <p className="text-sm text-gray-500">{bio.length}/500 characters</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="avatarUrl">Avatar URL</Label>
-                  <Input
-                    id="avatarUrl"
-                    type="url"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="border-2 border-black"
-                  />
-                  <p className="text-sm text-gray-500">
-                    Enter a URL to an image for your avatar
-                  </p>
-                </div>
+                
 
                 <Button
                   onClick={handleUpdateProfile}

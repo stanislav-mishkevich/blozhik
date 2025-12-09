@@ -1,7 +1,7 @@
 import { Heart, MessageCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { trpc } from "@/lib/trpc";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
@@ -111,6 +111,7 @@ export function PostCard({ post, author, tags, likeCount, commentCount, isLiked,
       {/* Author Info */}
       <div className="flex items-center gap-3 mb-4">
         <Avatar className="h-10 w-10 border-2 border-black">
+          <AvatarImage src={author.avatarUrl || undefined} />
           <AvatarFallback className="bg-gray-200 text-black font-semibold">
             {getInitials(author.name, author.username)}
           </AvatarFallback>

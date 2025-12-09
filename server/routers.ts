@@ -215,7 +215,7 @@ export const appRouter = router({
         username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, hyphens and underscores').optional(),
         name: z.string().max(100).optional(),
         bio: z.string().max(500).optional(),
-        avatarUrl: z.string().url().optional(),
+        avatarUrl: z.string().optional(), // Allow both URLs and data URLs
       }))
       .mutation(async ({ ctx, input }) => {
         if (input.username) {
@@ -1249,6 +1249,11 @@ export const appRouter = router({
         .input(z.object({ days: z.number().optional() }))
         .query(async ({ ctx, input }) => {
           return await db.getAdminStatsEngagement(input.days ?? 30);
+        }),
+      userMetrics: adminProcedure
+        .input(z.object({ days: z.number().optional() }))
+        .query(async ({ ctx, input }) => {
+          return await db.getAdminStatsUserMetrics(input.days ?? 30);
         }),
     }),
 

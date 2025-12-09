@@ -1,7 +1,7 @@
 import { useParams, useLocation, useSearch } from "wouter";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
@@ -254,14 +254,13 @@ export default function UserProfile() {
         {/* Profile Header */}
         <div className="bg-white border-2 border-black rounded-lg p-4 sm:p-6 md:p-8 sketch-shadow mb-6 sm:mb-8">
           <div className="flex flex-col md:flex-row gap-4 sm:gap-6">
-            {/* Avatar */}
-            <Avatar className="h-24 w-24 border-4 border-black">
-              <AvatarFallback className="bg-gray-200 text-black font-bold text-3xl">
-                {getInitials(profile.name, profile.username)}
-              </AvatarFallback>
-            </Avatar>
-
-            {/* Info */}
+    {/* Avatar */}
+    <Avatar className="h-24 w-24 border-4 border-black">
+      <AvatarImage src={profile.avatarUrl || undefined} />
+      <AvatarFallback className="bg-gray-200 text-black font-bold text-3xl">
+        {getInitials(profile.name, profile.username)}
+      </AvatarFallback>
+    </Avatar>            {/* Info */}
             <div className="flex-1">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -333,38 +332,6 @@ export default function UserProfile() {
               <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
                 <Calendar className="h-4 w-4" />
                 <span>Joined {formatDate(profile.createdAt)}</span>
-              </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg border-2 border-black">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{profile.stats.postCount}</div>
-                  <div className="text-sm text-gray-600">Posts</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{profile.stats.totalLikes}</div>
-                  <div className="text-sm text-gray-600">Likes</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{profile.stats.commentCount}</div>
-                  <div className="text-sm text-gray-600">Comments</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{profile.followers}</div>
-                  <div className="text-sm text-gray-600">Followers</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{profile.following}</div>
-                  <div className="text-sm text-gray-600">Following</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{profile.bookmarks}</div>
-                  <div className="text-sm text-gray-600">Bookmarks</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">{profile.views ?? 0}</div>
-                  <div className="text-sm text-gray-600">Views (30d)</div>
-                </div>
               </div>
             </div>
           </div>
@@ -537,8 +504,12 @@ export default function UserProfile() {
                           <span className="font-bold">{profile.views ?? 0}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Followers</span>
-                          <span className="font-bold">{profile.followers}</span>
+                          <span className="text-gray-600">Avg Views per Post</span>
+                          <span className="font-bold">
+                            {profile.stats.postCount > 0 
+                              ? ((profile.views ?? 0) / profile.stats.postCount).toFixed(1)
+                              : '0'}
+                          </span>
                         </div>
                       </div>
                     </div>
