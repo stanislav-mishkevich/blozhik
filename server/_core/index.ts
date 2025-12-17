@@ -13,6 +13,7 @@ if (major < MIN_MAJOR || (major === MIN_MAJOR && minor < MIN_MINOR)) {
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import cors from "cors";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -43,6 +44,12 @@ async function findAvailablePort(startPort: number = 3030): Promise<number> {
 
 async function startServer() {
   const app = express();
+  
+  // CORS - allow requests from the frontend
+  app.use(cors({
+    origin: true, // Allow all origins in development
+    credentials: true,
+  }));
   
   // Security headers
   app.use((req, res, next) => {

@@ -58,7 +58,7 @@ export default function AdminComments() {
             <div className="bg-white dark:bg-slate-800 rounded-lg border-2 border-black dark:border-white sketch-shadow">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-slate-50 dark:bg-slate-700 border-b-2 border-black dark:border-white">\n                    <tr>
+                  <thead className="bg-slate-50 dark:bg-slate-700 border-b-2 border-black dark:border-white">                   <tr>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Author</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Content</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">Post</th>

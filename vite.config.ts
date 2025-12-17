@@ -13,8 +13,8 @@ const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export default defineConfig({
-  base: '/blozhik/',
+export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/blozhik/' : '/',
   plugins,
   resolve: {
     alias: {
@@ -42,8 +42,7 @@ export default defineConfig({
       "127.0.0.1",
     ],
     fs: {
-      strict: true,
-      deny: ["**/.*", ".well-known"],
+      strict: false,
     },
   },
-});
+}));
