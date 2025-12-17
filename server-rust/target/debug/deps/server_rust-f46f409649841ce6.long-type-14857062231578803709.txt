@@ -1,0 +1,2 @@
+fn(axum::Json<RegisterRequest>, Extension<Pool<Sqlite>>) -> impl std::future::Future<Output = Result<axum::Json<SuccessResponse>, (axum::http::StatusCode, std::string::String)>> {register}
+fn(axum::Json<RegisterRequest>, Extension<Pool<Sqlite>>) -> impl std::future::Future<Output = Result<axum::Json<SuccessResponse>, (axum::http::StatusCode, std::string::String)>> {register}: Handler<_, _>
