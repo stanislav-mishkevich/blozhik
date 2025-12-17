@@ -175,3 +175,12 @@ screenshots/
 **/*.md
 !**/README.md
 
+# Rust build artifacts
+/target/
+**/target/
+**/debug/
+**/release/
+**/*.rs.bk
+**/*.rlib
+**/*.prof*
+
