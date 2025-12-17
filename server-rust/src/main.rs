@@ -1,18 +1,18 @@
-use axum::{routing::get, Router};
-use std::net::SocketAddr;
-
-mod handlers;
+mod app;
+mod db;
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let app = Router::new().route("/health", get(handlers::health::health_handler));
+    tracing::info!("starting server setup");
+    match db::init_db().await {
+        Ok(pool) => {
+            let _ = app::app(pool);
+            tracing::info!("app constructed");
+        }
+        Err(e) => tracing::error!("failed init db: {}", e),
+    }
 
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    tracing::info!("listening on {}", addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
-        .await
-        .unwrap();
+    tracing::info!("server initialized (tests spawn server)");
 }
