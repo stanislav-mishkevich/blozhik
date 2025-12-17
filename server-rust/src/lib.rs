@@ -23,8 +23,11 @@ pub fn make_app(pool: SqlitePool) -> Router {
         .route("/auth/login", post(login))
         .route("/post/create", post(create_post))
         .route("/post/get", post(get_post))
+        .route("/post/react", post(post_react))
+        .route("/post/feed", post(get_feed))
         .route("/comment/create", post(create_comment))
         .route("/comment/byPostId", post(get_comments_by_post))
+        .route("/comment/react", post(comment_react))
         .route("/like/toggle", post(toggle_like))
         .route("/bookmark/toggle", post(toggle_bookmark))
         .route("/notification/list", post(notification_list))
@@ -55,6 +58,103 @@ async fn get_user_id_from_cookie(pool: &SqlitePool, headers: &axum::http::Header
         }
     }
     Ok(None)
+}
+
+#[derive(Deserialize)]
+pub struct ReactRequest {
+    pub postId: i64,
+    pub reactionType: String,
+}
+
+#[derive(Serialize)]
+pub struct ReactResponse {
+    pub counts: i64,
+    pub total: i64,
+}
+
+async fn post_react(Extension(pool): Extension<SqlitePool>, headers: axum::http::HeaderMap, Json(payload): Json<ReactRequest>) -> Result<Json<ReactResponse>, (StatusCode, String)> {
+    // require auth
+    let user_id = match get_user_id_from_cookie(&pool, &headers).await.map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e))? {
+        Some(id) => id,
+        None => return Err((StatusCode::UNAUTHORIZED, "not authorized".into())),
+    };
+
+    // upsert reaction (simple set/replace)
+    let existing: Option<i64> = sqlx::query_scalar::<_, i64>("SELECT id FROM post_reactions WHERE post_id = ? AND user_id = ?")
+        .bind(payload.postId)
+        .bind(user_id)
+        .fetch_optional(&pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    if let Some(id) = existing {
+        sqlx::query("UPDATE post_reactions SET reaction_type = ? WHERE id = ?")
+            .bind(&payload.reactionType)
+            .bind(id)
+            .execute(&pool)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    } else {
+        sqlx::query("INSERT INTO post_reactions (post_id, user_id, reaction_type) VALUES (?, ?, ?)")
+            .bind(payload.postId)
+            .bind(user_id)
+            .bind(&payload.reactionType)
+            .execute(&pool)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    }
+
+    let counts: i64 = sqlx::query_scalar("SELECT COUNT(1) FROM post_reactions WHERE post_id = ? AND reaction_type = ?")
+        .bind(payload.postId)
+        .bind(&payload.reactionType)
+        .fetch_one(&pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let total: i64 = sqlx::query_scalar("SELECT COUNT(1) FROM post_reactions WHERE post_id = ?")
+        .bind(payload.postId)
+        .fetch_one(&pool)
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    Ok(Json(ReactResponse { counts, total }))
+}
+
+#[derive(Deserialize)]
+pub struct FeedRequest {
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+    pub sortBy: Option<String>, // "new" or "popular"
+}
+
+async fn get_feed(Extension(pool): Extension<SqlitePool>, Json(req): Json<FeedRequest>) -> Result<Json<Vec<PostResponse>>, (StatusCode, String)> {
+    let limit = req.limit.unwrap_or(20);
+    let offset = req.offset.unwrap_or(0);
+    let sort = req.sortBy.unwrap_or("new".into());
+
+    let rows = if sort == "popular" {
+        sqlx::query_as::<_, (i64, String, String, String, i64)>("SELECT p.id, p.title, p.content, p.content_type, p.published FROM posts p LEFT JOIN likes l ON p.id = l.post_id GROUP BY p.id ORDER BY COUNT(l.id) DESC LIMIT ? OFFSET ?")
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&pool)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+    } else {
+        sqlx::query_as::<_, (i64, String, String, String, i64)>("SELECT id, title, content, content_type, published FROM posts ORDER BY id DESC LIMIT ? OFFSET ?")
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&pool)
+            .await
+            .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+    };
+
+    let mut out = Vec::new();
+    for (id, title, content, content_type, published) in rows {
+        let rendered = if content_type == "markdown" { render_markdown_to_html(&content) } else { content.clone() };
+        out.push(PostResponse { post_id: id, title, content, renderedContent: rendered, published: published != 0 });
+    }
+
+    Ok(Json(out))
 }
 
 fn render_markdown_to_html(md: &str) -> String {
@@ -814,5 +914,74 @@ mod tests {
         let b4 = axum::body::to_bytes(resp4.into_body(), 64 * 1024).await.unwrap();
         let v4: serde_json::Value = serde_json::from_slice(&b4).unwrap();
         assert_eq!(v4.get("count").and_then(|c| c.as_i64()).unwrap(), 1);
+    }
+
+    #[tokio::test]
+    async fn test_post_react_and_feed() {
+        let pool = SqlitePool::connect_lazy(":memory:").unwrap();
+        pool.execute(r#"CREATE TABLE users (id INTEGER PRIMARY KEY, email TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL, password_hash TEXT, open_id TEXT);"#).await.unwrap();
+        pool.execute(r#"CREATE TABLE sessions (id INTEGER PRIMARY KEY, token TEXT UNIQUE NOT NULL, user_id INTEGER, expires_at INTEGER);"#).await.unwrap();
+        pool.execute(r#"CREATE TABLE posts (id INTEGER PRIMARY KEY, user_id INTEGER, title TEXT, content TEXT, content_type TEXT, excerpt TEXT, published INTEGER);"#).await.unwrap();
+        pool.execute(r#"CREATE TABLE post_reactions (id INTEGER PRIMARY KEY, post_id INTEGER, user_id INTEGER, reaction_type TEXT);"#).await.unwrap();
+
+        // create user/session + a post
+        let token = uuid::Uuid::new_v4().to_string();
+        sqlx::query("INSERT INTO users (email, username, password_hash, open_id) VALUES (?, ?, ?, ?)")
+            .bind("test@example.com")
+            .bind("tester")
+            .bind("hash")
+            .bind("email_test")
+            .execute(&pool)
+            .await
+            .unwrap();
+        sqlx::query("INSERT INTO sessions (token, user_id, expires_at) VALUES (?, ?, ?)")
+            .bind(&token)
+            .bind(1i64)
+            .bind(99999999i64)
+            .execute(&pool)
+            .await
+            .unwrap();
+        sqlx::query("INSERT INTO posts (user_id, title, content, content_type, excerpt, published) VALUES (?, ?, ?, ?, ?, ?)")
+            .bind(1i64)
+            .bind("P")
+            .bind("c")
+            .bind("plaintext")
+            .bind("c")
+            .bind(1)
+            .execute(&pool)
+            .await
+            .unwrap();
+
+        let app = make_app(pool.clone());
+
+        // react
+        let req = Request::builder()
+            .method("POST")
+            .uri("/post/react")
+            .header("content-type", "application/json")
+            .header("cookie", format!("{}={}", COOKIE_NAME, token))
+            .body(Body::from(json!({"postId":1, "reactionType":"heart"}).to_string()))
+            .unwrap();
+
+        let resp = app.clone().oneshot(req).await.unwrap();
+        assert_eq!(resp.status(), StatusCode::OK);
+        let b = axum::body::to_bytes(resp.into_body(), 64 * 1024).await.unwrap();
+        let v: serde_json::Value = serde_json::from_slice(&b).unwrap();
+        assert_eq!(v.get("counts").and_then(|x| x.as_i64()).unwrap(), 1);
+
+        // feed new
+        let req2 = Request::builder()
+            .method("POST")
+            .uri("/post/feed")
+            .header("content-type", "application/json")
+            .body(Body::from(json!({"limit":10, "offset":0, "sortBy":"new"}).to_string()))
+            .unwrap();
+
+        let resp2 = app.clone().oneshot(req2).await.unwrap();
+        assert_eq!(resp2.status(), StatusCode::OK);
+        let b2 = axum::body::to_bytes(resp2.into_body(), 64 * 1024).await.unwrap();
+        let arr: serde_json::Value = serde_json::from_slice(&b2).unwrap();
+        assert!(arr.is_array());
+        assert_eq!(arr.as_array().unwrap().len(), 1);
     }
 }
