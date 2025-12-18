@@ -1,0 +1,131 @@
+{
+  "title": "Blozhik Backend API + DB + Code Map",
+  "generatedAt": "2025-12-18T00:00:00Z",
+  "api": {
+    "source": "tRPC (server/routers.ts)",
+    "basePath": "/api/trpc",
+    "routers": {
+      "analytics": {
+        "postViews": { "access": "public", "type": "query", "input": "z.object({ postId: z.number(), days: z.number().optional() })" },
+        "topPosts": { "access": "protected", "type": "query", "input": "z.object({ days: z.number().optional(), limit: z.number().optional() }).optional()" },
+        "authorViews": { "access": "public", "type": "query", "input": "z.object({ userId: z.number(), days: z.number().optional() })" },
+        "topAuthors": { "access": "public", "type": "query", "input": "z.object({ days: z.number().optional(), limit: z.number().optional() }).optional()" }
+      },
+      "system": { "source": "server/_core/systemRouter" },
+      "auth": {
+        "me": { "access": "public", "type": "query", "input": null },
+        "logout": { "access": "public", "type": "mutation", "input": null },
+        "register": { "access": "public", "type": "mutation", "input": "z.object({ email: z.string().email(), password: z.string().min(6), username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, hyphens and underscores') })" },
+        "login": { "access": "public", "type": "mutation", "input": "z.object({ email: z.string().email(), password: z.string() })" }
+      },
+      "user": {
+        "getProfile": { "access": "public", "type": "query", "input": "z.object({ userId: z.number().optional(), username: z.string().optional() })" },
+        "updateProfile": { "access": "protected", "type": "mutation", "input": "z.object({ username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, hyphens and underscores').optional(), name: z.string().max(100).optional(), bio: z.string().max(500).optional(), avatarUrl: z.string().optional() })" },
+        "changePassword": { "access": "protected", "type": "mutation", "input": "z.object({ oldPassword: z.string(), newPassword: z.string().min(6) })" },
+        "getAvatarUploadUrl": { "access": "protected", "type": "mutation", "input": "z.object({ contentType: z.string().optional() })" }
+      },
+      "follow": {
+        "toggle": { "access": "protected", "type": "mutation", "input": "z.object({ followingId: z.number() })" },
+        "getCounts": { "access": "public", "type": "query", "input": "z.object({ userId: z.number() })" },
+        "isFollowing": { "access": "public", "type": "query", "input": "z.object({ followerId: z.number(), followingId: z.number() })" },
+        "getFollowers": { "access": "public", "type": "query", "input": "z.object({ userId: z.number() })" },
+        "getFollowing": { "access": "public", "type": "query", "input": "z.object({ userId: z.number() })" }
+      },
+      "post": {
+        "create": { "access": "protected", "type": "mutation", "input": "z.object({ title: z.string().min(1).max(200), content: z.string().min(1), contentType: z.enum(['plaintext','markdown']), tags: z.array(z.string()).max(10), published: z.boolean().default(false), categoryId: z.number().nullable().optional(), scheduledAt: z.string().nullable().optional() })" },
+        "update": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number(), title: z.string().min(1).max(200).optional(), content: z.string().min(1).optional(), contentType: z.enum(['plaintext','markdown']).optional(), tags: z.array(z.string()).max(10).optional(), published: z.boolean().optional(), categoryId: z.number().nullable().optional(), scheduledAt: z.string().nullable().optional() })" },
+        "delete": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number() })" },
+        "getById": { "access": "public", "type": "query", "input": "z.object({ postId: z.number() })" },
+        "react": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number(), reactionType: z.enum(['heart','laugh','ok','thumbs_down']) })" },
+        "getReaction": { "access": "public", "type": "query", "input": "z.object({ postId: z.number(), userId: z.number().optional() })" },
+        "getSimilar": { "access": "public", "type": "query", "input": "z.object({ postId: z.number(), limit: z.number().optional() })" },
+        "getFeed": { "access": "public", "type": "query", "input": "z.object({ limit: z.number().min(1).max(50).default(20), offset: z.number().min(0).default(0), sortBy: z.enum(['new','popular','trending']).default('new'), tagId: z.number().optional(), followingOnly: z.boolean().optional(), categoryId: z.number().optional() })" },
+        "getUserPosts": { "access": "public", "type": "query", "input": "z.object({ userId: z.number(), includeUnpublished: z.boolean().default(false) })" },
+        "getViews": { "access": "public", "type": "query", "input": "z.object({ postId: z.number(), days: z.number().optional() })" },
+        "getVersions": { "access": "public", "type": "query", "input": "z.object({ postId: z.number() })" },
+        "revertToVersion": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number(), versionId: z.number() })" },
+        "grammarCheck": { "access": "public", "type": "query", "input": "z.object({ text: z.string(), language: z.string().optional() })" },
+        "getDiff": { "access": "public", "type": "query", "input": "z.object({ postId: z.number(), versionId: z.number().optional() })" },
+        "saveDraft": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number().optional(), title: z.string().optional(), content: z.string().optional(), contentType: z.enum(['plaintext','markdown']).optional(), tags: z.array(z.string()).optional(), categoryId: z.number().nullable().optional() })" },
+        "getDrafts": { "access": "protected", "type": "query", "input": "z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional()" },
+        "getImageUploadUrl": { "access": "protected", "type": "mutation", "input": "z.object({ contentType: z.string().optional() })" }
+      },
+      "comment": {
+        "create": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number(), content: z.string().min(1).max(1000), parentId: z.number().nullable().optional() })" },
+        "delete": { "access": "protected", "type": "mutation", "input": "z.object({ commentId: z.number() })" },
+        "getByPostId": { "access": "public", "type": "query", "input": "z.object({ postId: z.number() })" },
+        "getReplies": { "access": "public", "type": "query", "input": "z.object({ parentId: z.number() })" },
+        "react": { "access": "protected", "type": "mutation", "input": "z.object({ commentId: z.number(), reactionType: z.enum(['heart','laugh','ok','thumbs_down']) })" },
+        "getReaction": { "access": "public", "type": "query", "input": "z.object({ commentId: z.number(), userId: z.number().optional() })" }
+      },
+      "like": { "toggle": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number() })" } },
+      "bookmark": { "toggle": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number() })" }, "list": { "access": "public", "type": "query", "input": "z.object({ userId: z.number().optional() })" } },
+      "announcement": { "getActive": { "access": "public", "type": "query", "input": null } },
+      "tag": { "getPopular": { "access": "public", "type": "query", "input": "z.object({ limit: z.number().min(1).max(50).default(10) })" }, "getByName": { "access": "public", "type": "query", "input": "z.object({ name: z.string() })" }, "getTrending": { "access": "public", "type": "query", "input": "z.object({ days: z.number().optional(), limit: z.number().optional() }).optional()" } },
+      "category": { "create": { "access": "protected", "type": "mutation", "input": "z.object({ name: z.string(), slug: z.string() })" }, "list": { "access": "public", "type": "query", "input": null }, "getPopular": { "access": "public", "type": "query", "input": "z.object({ limit: z.number().min(1).max(50).default(10) })" }, "getBySlug": { "access": "public", "type": "query", "input": "z.object({ slug: z.string() })" }, "setPostCategory": { "access": "protected", "type": "mutation", "input": "z.object({ postId: z.number(), categoryId: z.number().nullable() })" } },
+      "notification": { "list": { "access": "protected", "type": "query", "input": "z.object({ limit: z.number().optional(), offset: z.number().optional() })" }, "markRead": { "access": "protected", "type": "mutation", "input": "z.object({ notificationId: z.number() })" }, "delete": { "access": "protected", "type": "mutation", "input": "z.object({ notificationId: z.number() })" }, "unreadCount": { "access": "protected", "type": "query", "input": null }, "clearAll": { "access": "protected", "type": "mutation", "input": null } },
+      "search": { "posts": { "access": "public", "type": "query", "input": "z.object({ query: z.string().min(1), limit: z.number().min(1).max(50).default(20) })" } },
+      "admin": { "users": { "list": { "access": "admin", "type": "query", "input": "z.object({ role: z.string().optional(), status: z.enum(['active','banned','inactive']).optional(), limit: z.number().optional().default(50), offset: z.number().optional().default(0), search: z.string().optional() })" }, "get": { "access": "admin", "type": "query", "input": "z.object({ id: z.number() })" }, "create": { "access": "admin", "type": "mutation", "input": "z.object({ username: z.string().min(3).max(30), email: z.string().email(), password: z.string().min(8), name: z.string().optional(), bio: z.string().optional(), role: z.enum(['user','moderator','admin','superadmin','god']).default('user') })" }, "updateRole": { "access": "admin", "type": "mutation", "input": "z.object({ userId: z.number(), role: z.string() })" }, "ban": { "access": "admin", "type": "mutation", "input": "z.object({ userId: z.number(), reason: z.string().optional() })" }, "unban": { "access": "admin", "type": "mutation", "input": "z.object({ userId: z.number() })" }, "delete": { "access": "admin", "type": "mutation", "input": "z.object({ userId: z.number() })" } }, "bans": { "list": { "access": "admin", "type": "query", "input": null }, "ban": { "access": "admin", "type": "mutation", "input": "z.object({ userId: z.number(), reason: z.string(), days: z.number().optional() })" }, "unban": { "access": "admin", "type": "mutation", "input": "z.object({ userId: z.number() })" }, "checkStatus": { "access": "public", "type": "query", "input": "z.object({ userId: z.number() })" } }, "posts": { "list": { "access": "admin", "type": "query", "input": "z.object({ authorId: z.number().optional(), status: z.enum(['published','draft','scheduled']).optional(), limit: z.number().optional().default(50), offset: z.number().optional().default(0), search: z.string().optional() })" }, "delete": { "access": "admin", "type": "mutation", "input": "z.object({ postId: z.number(), reason: z.string().optional() })" }, "feature": { "access": "admin", "type": "mutation", "input": "z.object({ postId: z.number(), featured: z.boolean() })" } }, "comments": { "list": { "access": "admin", "type": "query", "input": "z.object({ postId: z.number().optional(), authorId: z.number().optional(), limit: z.number().optional().default(50), offset: z.number().optional().default(0), search: z.string().optional() })" }, "delete": { "access": "admin", "type": "mutation", "input": "z.object({ commentId: z.number(), reason: z.string().optional() })" }, "hide": { "access": "admin", "type": "mutation", "input": "z.object({ commentId: z.number(), hidden: z.boolean() })" } }, "reports": { "list": { "access": "admin", "type": "query", "input": "z.object({ status: z.enum(['open','resolved','dismissed']).optional(), targetType: z.enum(['post','comment','user']).optional(), limit: z.number().optional().default(50), offset: z.number().optional().default(0) })" }, "resolve": { "access": "admin", "type": "mutation", "input": "z.object({ reportId: z.number(), action: z.string().optional() })" }, "dismiss": { "access": "admin", "type": "mutation", "input": "z.object({ reportId: z.number() })" } }, "statistics": { "overview": { "access": "admin", "type": "query", "input": null }, "users": { "access": "admin", "type": "query", "input": "z.object({ days: z.number().optional() })" }, "content": { "access": "admin", "type": "query", "input": "z.object({ days: z.number().optional() })" }, "engagement": { "access": "admin", "type": "query", "input": "z.object({ days: z.number().optional() })" }, "userMetrics": { "access": "admin", "type": "query", "input": "z.object({ days: z.number().optional() })" } }, "auditLogs": { "list": { "access": "admin", "type": "query", "input": "z.object({ adminId: z.number().optional(), action: z.string().optional(), limit: z.number().optional().default(50), offset: z.number().optional().default(0), startDate: z.string().optional(), endDate: z.string().optional() })" }, "get": { "access": "admin", "type": "query", "input": "z.object({ id: z.number() })" } }, "settings": { "get": { "access": "admin", "type": "query", "input": null }, "update": { "access": "admin", "type": "mutation", "input": "z.object({ siteName: z.string().optional(), siteDescription: z.string().optional(), contactEmail: z.string().optional(), registrationsEnabled: z.boolean().optional(), maxUploadSize: z.number().optional() })" } }, "announcements": { "list": { "access": "admin", "type": "query", "input": null }, "create": { "access": "admin", "type": "mutation", "input": "z.object({ title: z.string(), content: z.string(), type: z.enum(['info','warning','error','success']), startDate: z.string().optional(), endDate: z.string().optional(), targetAudience: z.enum(['all','new_users','admins']).optional(), targetUserIds: z.string().optional() })" }, "update": { "access": "admin", "type": "mutation", "input": "z.object({ id: z.number(), title: z.string().optional(), content: z.string().optional(), type: z.enum(['info','warning','error','success']).optional(), startDate: z.string().optional(), endDate: z.string().optional(), targetAudience: z.enum(['all','new_users','admins']).optional(), targetUserIds: z.string().optional() })" }, "delete": { "access": "admin", "type": "mutation", "input": "z.object({ id: z.number() })" } }, "categories": { "list": { "access": "admin", "type": "query", "input": null }, "create": { "access": "admin", "type": "mutation", "input": "z.object({ name: z.string(), slug: z.string(), description: z.string().optional() })" }, "update": { "access": "admin", "type": "mutation", "input": "z.object({ id: z.number(), name: z.string().optional(), slug: z.string().optional(), description: z.string().optional() })" }, "delete": { "access": "admin", "type": "mutation", "input": "z.object({ id: z.number() })" } }
+    },
+    "notes": "All router inputs are kept as Zod source strings. Protected routes require authentication and admin routes require adminProcedure (see server/_core/trpc.ts)."
+  },
+  "database": {
+    "dialect": "sqlite",
+    "schemaSource": "drizzle/schema.ts",
+    "tables": "see drizzle/schema.ts - will create detailed database-schema.json separately",
+    "migrations": [
+      "drizzle/0000_gifted_shinko_yamashiro.sql",
+      "drizzle/0000_daily_micromax.sql",
+      "drizzle/0001_petite_the_santerians.sql.ignore",
+      "drizzle/0002_add_follow_bookmark_category.sql",
+      "drizzle/0003_add_notifications.sql",
+      "drizzle/0004_add_comments_parent.sql",
+      "drizzle/0005_add_post_versions.sql",
+      "drizzle/0006_add_scheduled_at.sql",
+      "drizzle/0007_add_post_views.sql",
+      "drizzle/0008_add_reports_audit_updates.sql",
+      "drizzle/0009_add_featured_hidden_announcements.sql",
+      "drizzle/0010_add_reports_blocks_badges.sql",
+      "drizzle/0011_add_comment_reactions.sql",
+      "drizzle/0012_migrate_reactions_to_emojis.sql",
+      "drizzle/0013_add_post_reactions.sql",
+      "drizzle/0014_fix_audit_logs_userid.sql",
+      "drizzle/0015_fix_audit_logs_remove_adminId.sql",
+      "drizzle/0016_add_bannedUntil.sql",
+      "drizzle/0017_fix_reports_add_action.sql",
+      "drizzle/0018_add_announcement_target_users.sql"
+    ]
+  },
+  "directories": {
+    "server": {
+      "path": "server",
+      "files": [
+        "server/_core/index.ts",
+        "server/_core/trpc.ts",
+        "server/_core/context.ts",
+        "server/_core/sdk.ts",
+        "server/_core/auditLog.ts",
+        "server/_core/notificationHub.ts",
+        "server/_core/s3.ts",
+        "server/_core/oauth.ts",
+        "server/_core/middleware/guardMalformedUri.ts",
+        "server/routers.ts",
+        "server/db.ts"
+      ],
+      "description": "Server-side code: tRPC router, DB layer (drizzle), core helpers, tests and utilities."
+    },
+    "shared": {
+      "path": "shared",
+      "files": [
+        "shared/const.ts",
+        "shared/permissions.ts",
+        "shared/rolePermissions.ts",
+        "shared/types.ts",
+        "shared/_core/errors.ts"
+      ],
+      "description": "Shared constants, permission definitions, types and error helpers used by client and server."
+    }
+  },
+  "generatedBy": "assistant",
+  "notes": "If you want a more detailed export (full Zod AST, OpenAPI mapping, or a full database-schema.json), reply and I will generate those files next."
+}
