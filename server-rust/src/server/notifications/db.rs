@@ -1,5 +1,5 @@
 use anyhow::Result;
-use rusqlite::{params, Connection};
+use rusqlite::{params, Connection, OptionalExtension};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -30,8 +30,8 @@ fn ensure_table(conn: &Connection) -> Result<()> {
 }
 
 pub fn create_notification(user_open_id: &str, actor_open_id: Option<&str>, verb: &str, data: Option<&Value>) -> Result<i64> {
-    // open a local connection to avoid touching global mutex here
-    let mut conn = crate::server::db::open_conn()?;
+    // use a fresh connection per operation to avoid issues with tests and moved temp files
+    let conn = crate::server::db::open_conn()?;
     ensure_table(&conn)?;
     let data_text = data.map(|d| serde_json::to_string(d).unwrap());
     conn.execute(
@@ -66,9 +66,72 @@ pub fn list_notifications_for_user(user_open_id: &str, limit: i64) -> Result<Vec
     Ok(out)
 }
 
+pub fn list_notifications_since(user_open_id: &str, last_id: i64, limit: i64) -> Result<Vec<Notification>> {
+    let conn = crate::server::db::open_conn()?;
+    ensure_table(&conn)?;
+    let mut stmt = conn.prepare("SELECT id, userOpenId, actorOpenId, verb, data, read, createdAt FROM notifications WHERE userOpenId = ?1 AND id > ?2 ORDER BY id ASC LIMIT ?3")?;
+    let mut rows = stmt.query(params![user_open_id, last_id, limit])?;
+    let mut out = Vec::new();
+    while let Some(r) = rows.next()? {
+        let data_text: Option<String> = r.get(4)?;
+        let data = match data_text {
+            Some(t) => serde_json::from_str(&t).ok(),
+            None => None,
+        };
+        out.push(Notification {
+            id: r.get(0)?,
+            user_open_id: r.get(1)?,
+            actor_open_id: r.get(2)?,
+            verb: r.get(3)?,
+            data,
+            read: r.get::<_, i64>(5)? != 0,
+            created_at: r.get(6)?,
+        });
+    }
+    Ok(out)
+}
+
 pub fn mark_notification_read(notification_id: i64) -> Result<()> {
     let conn = crate::server::db::open_conn()?;
     ensure_table(&conn)?;
     conn.execute("UPDATE notifications SET read = 1 WHERE id = ?1", params![notification_id])?;
     Ok(())
+}
+
+pub fn mark_all_read_for_user(user_open_id: &str) -> Result<i64> {
+    let conn = crate::server::db::open_conn()?;
+    ensure_table(&conn)?;
+    // perform update and return number of rows changed
+    conn.execute("UPDATE notifications SET read = 1 WHERE userOpenId = ?1 AND read = 0", params![user_open_id])?;
+    // rusqlite Connection::changes() returns the number of rows modified by the most recent operation
+    let changed = conn.changes();
+    Ok(changed as i64)
+}
+
+pub fn count_unread_for_user(user_open_id: &str) -> Result<i64> {
+    let conn = crate::server::db::open_conn()?;
+    ensure_table(&conn)?;
+    let mut stmt = conn.prepare("SELECT COUNT(*) FROM notifications WHERE userOpenId = ?1 AND read = 0")?;
+    let cnt: i64 = stmt.query_row(params![user_open_id], |r| r.get(0))?;
+    Ok(cnt)
+}
+
+pub fn get_notification_by_id(notification_id: i64) -> Result<Option<Notification>> {
+    let conn = crate::server::db::open_conn()?;
+    ensure_table(&conn)?;
+    let mut stmt = conn.prepare("SELECT id, userOpenId, actorOpenId, verb, data, read, createdAt FROM notifications WHERE id = ?1")?;
+    let row = stmt.query_row(params![notification_id], |r| {
+        let data_text: Option<String> = r.get(4)?;
+        let data = match data_text { Some(t) => serde_json::from_str(&t).ok(), None => None };
+        Ok(Notification {
+            id: r.get(0)?,
+            user_open_id: r.get(1)?,
+            actor_open_id: r.get(2)?,
+            verb: r.get(3)?,
+            data,
+            read: r.get::<_, i64>(5)? != 0,
+            created_at: r.get(6)?,
+        })
+    }).optional()?;
+    Ok(row)
 }

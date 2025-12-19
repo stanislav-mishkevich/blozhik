@@ -1,2 +1,7 @@
-// llm.ts port stub
-pub fn call_llm(_prompt: &str) -> Option<String> { None }
+use anyhow::Result;
+
+pub fn call_llm(prompt: &str) -> Result<String> {
+    // Stubbed LLM: echo the prompt with a prefix.
+    Ok(format!("LLM_REPLY: {}", prompt))
+}
+// llm.ts port stub removed — real implementation above

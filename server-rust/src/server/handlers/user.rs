@@ -55,8 +55,11 @@ pub fn handle_change_password(input: &Value, token: Option<&str>) -> Result<Valu
         Some(t) => sdk::verify_session_token(t)?.ok_or_else(|| anyhow::anyhow!("unauth"))?,
         None => return Err(anyhow::anyhow!("unauth")),
     };
-
-    let current = input.get("currentPassword").and_then(|v| v.as_str()).map(|s| s.to_string());
+    // accept either `currentPassword` or `oldPassword` from frontend
+    let current = input.get("currentPassword")
+        .or_else(|| input.get("oldPassword"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string());
     let new = input.get("newPassword").and_then(|v| v.as_str()).map(|s| s.to_string());
     if current.is_none() || new.is_none() {
         return Err(anyhow::anyhow!("missing_passwords"));
@@ -74,4 +77,19 @@ pub fn handle_change_password(input: &Value, token: Option<&str>) -> Result<Valu
     db::upsert_user_openid(&open_id, None, None, Some(&new_hash), None)?;
 
     Ok(json!({ "ok": true }))
+}
+
+pub fn handle_get_avatar_upload_url(input: &Value, token: Option<&str>) -> Result<Value> {
+    let open_id = match token {
+        Some(t) => sdk::verify_session_token(t)?.ok_or_else(|| anyhow::anyhow!("unauth"))?,
+        None => return Err(anyhow::anyhow!("unauth")),
+    };
+
+    let content_type = input.get("contentType").and_then(|v| v.as_str()).unwrap_or("application/octet-stream");
+    // Use s3 stub to generate a signed url (may be empty in local dev)
+    let upload_url = crate::server::_core::s3::create_signed_upload_url(content_type);
+    // provide a key the frontend can use to reference the avatar (simple heuristic)
+    let key = format!("avatars/{}/avatar", open_id);
+
+    Ok(json!({ "ok": true, "uploadUrl": upload_url, "key": key }))
 }

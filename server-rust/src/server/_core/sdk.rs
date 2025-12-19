@@ -19,4 +19,12 @@ pub fn delete_session_token(token: &str) -> Result<()> {
     Ok(())
 }
 // sdk.ts port stub (auth/session integration)
-pub fn verify_token(_token: &str) -> Option<i64> { None }
+pub fn verify_token(token: &str) -> Option<i64> {
+    // Try to resolve session token to a user id
+    if let Ok(Some(open_id)) = db::get_openid_by_session(token) {
+        if let Ok(Some(user)) = db::get_user_by_openid(&open_id) {
+            return Some(user.id);
+        }
+    }
+    None
+}

@@ -70,6 +70,10 @@ async fn trpc_handler(req: HttpRequest, body: web::Bytes) -> impl Responder {
                 Ok(v) => v,
                 Err(e) => serde_json::json!({ "error": format!("{}", e) }),
             },
+            ("user", "getAvatarUploadUrl") => match server::handlers::user::handle_get_avatar_upload_url(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
             ("post", "create") => match server::handlers::post::handle_create_post(&input, token_cookie.as_deref()) {
                 Ok(v) => v,
                 Err(e) => serde_json::json!({ "error": format!("{}", e) }),
@@ -90,6 +94,62 @@ async fn trpc_handler(req: HttpRequest, body: web::Bytes) -> impl Responder {
                 Ok(v) => v,
                 Err(e) => serde_json::json!({ "error": format!("{}", e) }),
             },
+            ("follows", "follow") => match server::handlers::follows::handle_follow(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("follows", "unfollow") => match server::handlers::follows::handle_unfollow(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("follows", "listFollowers") => match server::handlers::follows::handle_list_followers(&input) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("follows", "addBookmark") => match server::handlers::follows::handle_add_bookmark(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("follows", "removeBookmark") => match server::handlers::follows::handle_remove_bookmark(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("follows", "listBookmarks") => match server::handlers::follows::handle_list_bookmarks(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("drafts", "create") => match server::handlers::drafts::handle_create_draft(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("drafts", "update") => match server::handlers::drafts::handle_update_draft(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("drafts", "get") => match server::handlers::drafts::handle_get_draft(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("drafts", "list") => match server::handlers::drafts::handle_list_drafts(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("reactions", "add") => match server::handlers::reactions::handle_add(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("reactions", "remove") => match server::handlers::reactions::handle_remove(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("reactions", "count") => match server::handlers::reactions::handle_count(&input) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("reactions", "list") => match server::handlers::reactions::handle_list(&input) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
             ("notifications", "publish") => match server::notifications::handlers::handle_publish(&input, token_cookie.as_deref()) {
                 Ok(v) => v,
                 Err(e) => serde_json::json!({ "error": format!("{}", e) }),
@@ -98,7 +158,18 @@ async fn trpc_handler(req: HttpRequest, body: web::Bytes) -> impl Responder {
                 Ok(v) => v,
                 Err(e) => serde_json::json!({ "error": format!("{}", e) }),
             },
-            _ => serde_json::json!({ "error": "not_implemented", "method": method }),
+            ("notifications", "markRead") => match server::notifications::handlers::handle_mark_read(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            ("notifications", "unreadCount") => match server::notifications::handlers::handle_unread_count(&input, token_cookie.as_deref()) {
+                Ok(v) => v,
+                Err(e) => serde_json::json!({ "error": format!("{}", e) }),
+            },
+            _ => {
+                // Delegate to generic trpc dispatcher which will consult routers-full.json
+                server::_core::trpc::dispatch(method, &input, token_cookie.as_deref())
+            }
         };
 
         // Capture cookie actions if returned by handler
@@ -157,9 +228,7 @@ async fn trpc_handler(req: HttpRequest, body: web::Bytes) -> impl Responder {
     }
 }
 
-async fn sse_stub(_req: HttpRequest) -> impl Responder {
-    HttpResponse::NotImplemented().body("SSE not implemented yet in Rust scaffold")
-}
+
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {

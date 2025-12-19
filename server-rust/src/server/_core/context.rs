@@ -1,8 +1,11 @@
-// context.ts port stub
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RequestContext {
-    pub user_id: Option<i64>,
+    pub open_id: Option<String>,
 }
 
 impl RequestContext {
-    pub fn new() -> Self { Self { user_id: None } }
+    pub fn new() -> Self { Self { open_id: None } }
+    pub fn with_open_id(id: &str) -> Self { Self { open_id: Some(id.to_string()) } }
 }

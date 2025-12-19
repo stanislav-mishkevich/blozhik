@@ -2,7 +2,6 @@ use anyhow::Result;
 use serde_json::{json, Value};
 use crate::server::db;
 use crate::server::_core::sdk;
-use uuid::Uuid;
 
 pub fn handle_create_post(input: &Value, token: Option<&str>) -> Result<Value> {
     // require auth

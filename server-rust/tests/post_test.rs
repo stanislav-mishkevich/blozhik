@@ -1,6 +1,5 @@
 use tempfile::NamedTempFile;
 use std::env;
-use serde_json::json;
 use anyhow::Result;
 
 #[test]
