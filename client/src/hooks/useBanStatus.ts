@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 
 export interface BanStatus {
   isBanned: boolean;
@@ -17,7 +17,7 @@ export function useBanStatus(userId?: number) {
   const [banStatus, setBanStatus] = useState<BanStatus>({ isBanned: false });
   const [showBanModal, setShowBanModal] = useState(false);
 
-  const { data, isLoading } = trpc.admin.bans.checkStatus.useQuery(
+  const { data, isLoading } = rustApi.admin.bans.checkStatus.useQuery(
     { userId: userId! },
     { enabled: !!userId, refetchInterval: 60000 } // Refetch every minute
   );
@@ -33,7 +33,7 @@ export function useBanStatus(userId?: number) {
 
   // Handle ban error from any mutation/query
   const handleBanError = (error: any) => {
-    if (error?.message === 'BANNED' || error?.data?.code === 'FORBIDDEN') {
+    if (error?.message === 'BANNED' || error?.data?.code === 'FORBIDDEN' || error?.data?.code === 10002) {
       const cause = error?.cause || error?.data?.cause;
       if (cause?.isBanned) {
         setBanStatus(cause);

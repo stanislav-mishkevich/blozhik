@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -18,7 +18,7 @@ export default function AdminDashboard() {
   const { user } = useAuthState();
   const [location, setLocation] = useLocation();
 
-  const { data: statsData, refetch } = trpc.admin.statistics.overview.useQuery(undefined, {
+  const { data: statsData, refetch } = rustApi.admin.statistics.overview.useQuery(undefined, {
     refetchOnMount: true,
     refetchOnWindowFocus: false,
   });

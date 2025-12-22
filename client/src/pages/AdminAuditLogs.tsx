@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminNav from '../components/AdminNav';
 import { useLocation } from 'wouter';
 

@@ -5,9 +5,9 @@ interface BanNotificationProps {
   banInfo: {
     isBanned: boolean;
     isPermanent?: boolean;
-    reason?: string;
-    bannedAt?: string;
-    bannedUntil?: string;
+    reason?: string | null;
+    bannedAt?: string | null;
+    bannedUntil?: string | null;
     remainingMs?: number;
     remainingDays?: number;
     remainingHours?: number;

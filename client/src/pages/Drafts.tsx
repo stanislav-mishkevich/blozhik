@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { trpc } from '@/lib/trpc';
+import { rustApi } from '@/lib/rustBack';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -15,10 +15,10 @@ import { toast } from 'sonner';
 export default function Drafts() {
   const { user } = useAuthState();
   const [, setLocation] = useLocation();
-  const { data: drafts, isLoading } = trpc.post.getDrafts.useQuery(undefined, { enabled: !!user });
-  const utils = trpc.useUtils();
+  const { data: drafts, isLoading } = rustApi.post.getDrafts.useQuery(undefined, { enabled: !!user });
+  const utils = rustApi.useUtils();
   
-  const deletePostMutation = trpc.post.delete.useMutation({
+  const deletePostMutation = rustApi.post.delete.useMutation({
     onSuccess: () => {
       toast.success('Draft deleted');
       utils.post.getDrafts.invalidate();

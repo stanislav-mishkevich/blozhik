@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import { ROLES, PERMISSIONS, ROLE_PERMISSIONS } from '../../../shared/permissions';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';

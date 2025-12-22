@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { trpc } from '@/lib/trpc';
+import { rustApi } from '@/lib/rustBack';
 import AdminHeader from '@/components/AdminHeader';
 import AdminNav from '@/components/AdminNav';
 import { useLocation } from 'wouter';
@@ -35,7 +35,7 @@ export default function AdminReports() {
   const [resolutionAction, setResolutionAction] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
 
-  const { data: reportsData, refetch } = trpc.admin.reports.list.useQuery({ limit: 100 });
+  const { data: reportsData, refetch } = rustApi.admin.reports.list.useQuery({ limit: 100 });
 
   useEffect(() => {
     if (reportsData) {
@@ -59,8 +59,8 @@ export default function AdminReports() {
     }
   }, [reportsData]);
 
-  const resolveReportMutation = trpc.admin.reports.resolve.useMutation();
-  const dismissReportMutation = trpc.admin.reports.dismiss.useMutation();
+  const resolveReportMutation = rustApi.admin.reports.resolve.useMutation();
+  const dismissReportMutation = rustApi.admin.reports.dismiss.useMutation();
 
   const handleResolveReport = async (reportId: string, action: 'resolve' | 'dismiss') => {
     if (!resolutionAction && action === 'resolve') {

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { useSearch } from "wouter";
 import { Header } from "@/components/Header";
 import { PostCard } from "@/components/PostCard";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { Search as SearchIcon } from "lucide-react";
 
 export default function Search() {
@@ -10,7 +10,7 @@ export default function Search() {
   const params = useMemo(() => new URLSearchParams(searchParams), [searchParams]);
   const query = params.get("q") || "";
 
-  const { data: results, isLoading } = trpc.search.posts.useQuery(
+  const { data: results, isLoading } = rustApi.search.posts.useQuery(
     { query, limit: 20 },
     { enabled: !!query }
   );

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';
 import { useLocation } from 'wouter';
@@ -13,12 +13,12 @@ export default function AdminComments() {
   const [location, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data, refetch } = trpc.admin.comments.list.useQuery({ 
+  const { data, refetch } = rustApi.admin.comments.list.useQuery({ 
     limit: 100, 
     search: searchQuery || undefined 
   });
   
-  const deleteMutation = trpc.admin.comments.delete.useMutation({
+  const deleteMutation = rustApi.admin.comments.delete.useMutation({
     onSuccess: () => {
       toast.success('Comment deleted');
       refetch();

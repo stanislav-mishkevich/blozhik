@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';
 import { useLocation } from 'wouter';
@@ -18,11 +18,12 @@ export default function AdminBans() {
   });
 
   // Fetch active bans
-  const { data: bans = [], refetch } = trpc.admin.bans.list.useQuery();
-  const { data: users = [] } = trpc.admin.users.list.useQuery({ limit: 1000 });
   
   // Mutations
-  const banMutation = trpc.admin.bans.ban.useMutation({
+    const { data: bans = [], refetch } = rustApi.admin.bans.list.useQuery();
+    const { data: users = [] } = rustApi.admin.users.list.useQuery({ limit: 1000 });
+  
+    const banMutation = rustApi.admin.bans.ban.useMutation({
     onSuccess: () => {
       toast.success('User banned successfully');
       refetch();
@@ -34,7 +35,7 @@ export default function AdminBans() {
     },
   });
 
-  const unbanMutation = trpc.admin.bans.unban.useMutation({
+  const unbanMutation = rustApi.admin.bans.unban.useMutation({
     onSuccess: () => {
       toast.success('User unbanned successfully');
       refetch();

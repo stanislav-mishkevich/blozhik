@@ -1,7 +1,7 @@
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 
 export function useAuthState() {
-  const { data: user, isLoading, error } = trpc.auth.me.useQuery();
+  const { data: user, isLoading, error } = rustApi.auth.me.useQuery();
   
   return {
     user: user || null,

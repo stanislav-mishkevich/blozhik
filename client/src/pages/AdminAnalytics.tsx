@@ -1,4 +1,4 @@
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { Badge } from "@/components/ui/badge";
 import AdminHeader from "@/components/AdminHeader";
 import AdminNav from "@/components/AdminNav";
@@ -18,10 +18,10 @@ export default function AdminAnalytics() {
   const [timeRange, setTimeRange] = useState<"7" | "30" | "90">("30");
   const days = parseInt(timeRange);
 
-  const { data: overview } = trpc.admin.statistics.overview.useQuery();
-  const { data: users } = trpc.admin.statistics.users.useQuery({ days });
-  const { data: content } = trpc.admin.statistics.content.useQuery({ days });
-  const { data: engagement } = trpc.admin.statistics.engagement.useQuery({ days });
+  const { data: overview } = rustApi.admin.statistics.overview.useQuery();
+  const { data: users } = rustApi.admin.statistics.users.useQuery({ days });
+  const { data: content } = rustApi.admin.statistics.content.useQuery({ days });
+  const { data: engagement } = rustApi.admin.statistics.engagement.useQuery({ days });
 
   const calculateChange = (current: number, previous: number) => {
     if (previous === 0) return { percent: 0, isIncrease: true };

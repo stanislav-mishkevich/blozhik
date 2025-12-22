@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
 import { X, Save, Send, Home, ChevronRight, PenSquare } from "lucide-react";
@@ -128,20 +128,20 @@ export default function Write() {
   const [categoryId, setCategoryId] = useState<number | null>(null);
   const [scheduledAt, setScheduledAt] = useState<string | null>(null);
 
-  const { data: categories } = trpc.category.list.useQuery();
-  const { data: existingPost } = trpc.post.getById.useQuery(
+  const { data: categories } = rustApi.category.list.useQuery();
+  const { data: existingPost } = rustApi.post.getById.useQuery(
     { postId: postId! },
     { enabled: !!postId }
   );
 
-  const { data: drafts } = trpc.post.getDrafts.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: drafts } = rustApi.post.getDrafts.useQuery(undefined, { enabled: isAuthenticated });
 
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [isDirty, setIsDirty] = useState(false);
   const [draftId, setDraftId] = useState<number | undefined>(postId);
   const [draftLoaded, setDraftLoaded] = useState(false);
   
-  const saveDraftMutation = trpc.post.saveDraft.useMutation({
+  const saveDraftMutation = rustApi.post.saveDraft.useMutation({
     onSuccess: (res) => {
       if (res.postId) setDraftId(res.postId);
       setLastSavedAt(new Date());
@@ -186,7 +186,7 @@ export default function Write() {
     setIsDirty(true);
   }, [title, content, contentType, tags, categoryId]);
 
-  const createMutation = trpc.post.create.useMutation({
+  const createMutation = rustApi.post.create.useMutation({
     onSuccess: (data) => {
       toast.success("Post created successfully!");
       setLocation(`/posts/${data.postId}`);
@@ -196,7 +196,7 @@ export default function Write() {
     },
   });
 
-  const updateMutation = trpc.post.update.useMutation({
+  const updateMutation = rustApi.post.update.useMutation({
     onSuccess: () => {
       toast.success("Post updated successfully!");
       setLocation(`/posts/${postId}`);

@@ -1,0 +1,24 @@
+# NPM ignore for package publishing (if applicable)
+node_modules/
+coverage/
+dist/
+build/
+.DS_Store
+.vscode/
+.idea/
+.env*
+*.db
+*.sqlite
+*.sqlite3
+
+# Exclude specs and local docs
+/specs/
+
+# Exclude source folders
+client/
+backend/
+
+# Lockfiles
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

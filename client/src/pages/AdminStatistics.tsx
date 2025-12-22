@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';
 import { useLocation } from 'wouter';
@@ -41,11 +41,11 @@ export default function AdminStatistics() {
   
   const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : 365;
   
-  const { data: overview, isLoading: loadingOverview } = trpc.admin.statistics.overview.useQuery();
-  const { data: usersData } = trpc.admin.statistics.users.useQuery({ days });
-  const { data: contentData } = trpc.admin.statistics.content.useQuery({ days });
-  const { data: engagementData } = trpc.admin.statistics.engagement.useQuery({ days });
-  const { data: userMetricsData } = trpc.admin.statistics.userMetrics.useQuery({ days });
+  const { data: overview, isLoading: loadingOverview } = rustApi.admin.statistics.overview.useQuery();
+  const { data: usersData } = rustApi.admin.statistics.users.useQuery({ days });
+  const { data: contentData } = rustApi.admin.statistics.content.useQuery({ days });
+  const { data: engagementData } = rustApi.admin.statistics.engagement.useQuery({ days });
+  const { data: userMetricsData } = rustApi.admin.statistics.userMetrics.useQuery({ days });
   
   const loading = loadingOverview;
   

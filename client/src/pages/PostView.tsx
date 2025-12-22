@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SEO } from "@/components/SEO";
 import { ShareButtons } from "@/components/ShareButtons";
 import CommentItem from "@/components/CommentItem";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
 import { Heart, MessageCircle, Calendar, Edit, Trash2, Send, Flag, Home, ChevronLeft, ChevronRight, Sparkles, Bookmark } from "lucide-react";
@@ -32,31 +32,31 @@ export default function PostView() {
   const [commentContent, setCommentContent] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const { data, isLoading } = trpc.post.getById.useQuery({ postId });
-  const { data: comments } = trpc.comment.getByPostId.useQuery({ postId });
-  const { data: similarPosts } = trpc.post.getSimilar.useQuery({ postId, limit: 4 }, { enabled: !!postId });
-  const utils = trpc.useUtils();
+    const { data, isLoading } = rustApi.post.getById.useQuery({ postId });
+    const { data: comments } = rustApi.comment.getByPostId.useQuery({ postId });
+    const { data: similarPosts } = rustApi.post.getSimilar.useQuery({ postId, limit: 4 }, { enabled: !!postId });
+    const utils = rustApi.useUtils();
 
-  const likeMutation = trpc.like.toggle.useMutation({
+  const likeMutation = rustApi.like.toggle.useMutation({
     onSuccess: () => {
       utils.post.getById.invalidate({ postId });
     },
   });
 
-  const postReactMutation = trpc.post.react.useMutation({
+  const postReactMutation = rustApi.post.react.useMutation({
     onSuccess: () => {
       utils.post.getById.invalidate({ postId });
     },
   });
 
-  const bookmarkMutation = trpc.bookmark.toggle.useMutation({
+  const bookmarkMutation = rustApi.bookmark.toggle.useMutation({
     onSuccess: () => {
       utils.post.getById.invalidate({ postId });
       toast.success(data?.isBookmarked ? "Bookmark removed" : "Post bookmarked!");
     },
   });
 
-  const commentMutation = trpc.comment.create.useMutation({
+  const commentMutation = rustApi.comment.create.useMutation({
     onSuccess: () => {
       setCommentContent("");
       utils.comment.getByPostId.invalidate({ postId });
@@ -67,21 +67,21 @@ export default function PostView() {
     },
   });
 
-  const deleteCommentMutation = trpc.comment.delete.useMutation({
+  const deleteCommentMutation = rustApi.comment.delete.useMutation({
     onSuccess: () => {
       utils.comment.getByPostId.invalidate({ postId });
       toast.success("Comment deleted");
     },
   });
 
-  const deletePostMutation = trpc.post.delete.useMutation({
+  const deletePostMutation = rustApi.post.delete.useMutation({
     onSuccess: () => {
       toast.success("Post deleted");
       setLocation("/feed");
     },
   });
 
-  const reportPostMutation = trpc.report.create.useMutation({
+  const reportPostMutation = rustApi.report.create.useMutation({
     onSuccess: () => {
       toast.success("Report submitted. Thank you for helping keep our community safe!");
     },

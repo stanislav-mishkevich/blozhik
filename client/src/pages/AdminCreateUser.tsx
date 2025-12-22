@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
 import { UserPlus, Shield, Star, Crown, User as UserIcon } from "lucide-react";
@@ -29,7 +29,7 @@ export default function AdminCreateUser() {
   const [bio, setBio] = useState("");
   const [role, setRole] = useState<string>("user");
 
-  const createUserMutation = trpc.admin.users.create.useMutation({
+  const createUserMutation = rustApi.admin.users.create.useMutation({
     onSuccess: () => {
       toast.success("User created successfully!");
       setLocation("/admin/users");

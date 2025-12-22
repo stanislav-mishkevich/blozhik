@@ -175,3 +175,7 @@ screenshots/
 **/*.md
 !**/README.md
 
+# Rust
+backend/target/
+**/target/
+Cargo.lock

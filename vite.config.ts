@@ -7,14 +7,18 @@ import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
-
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
+const plugins = [
+  react(),
+  tailwindcss(),
+  jsxLocPlugin(),
+  vitePluginManusRuntime(),
+];
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/blozhik/' : '/',
+  base: mode === "production" ? "/blozhik/" : "/",
   plugins,
   resolve: {
     alias: {
@@ -41,6 +45,29 @@ export default defineConfig(({ mode }) => ({
       "localhost",
       "127.0.0.1",
     ],
+    // Dev proxy: forward API and SSE calls to the Rust backend on :8080
+    proxy: {
+      // Proxy plain `/api` to Rust backend for rustBack.ts default endpoint
+      '/api': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+        rewrite: (path) => path.replace(/^\/api/, '/api/trpc'),
+      },
+      '/api/trpc': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+      },
+      '/api/notifications/stream': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true,
+        secure: false,
+        ws: false,
+      },
+    },
     fs: {
       strict: false,
     },

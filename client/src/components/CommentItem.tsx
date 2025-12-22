@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,19 +32,19 @@ export default function CommentItem({
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState("");
-  const utils = trpc.useUtils();
+  const utils = rustApi.useUtils();
 
-  const { data: reactionData } = trpc.comment.getReaction.useQuery(
+  const { data: reactionData } = rustApi.comment.getReaction.useQuery(
     { commentId: comment.id, userId: user?.id },
     { enabled: !!user }
   );
 
-  const { data: replies } = trpc.comment.getReplies.useQuery(
+  const { data: replies } = rustApi.comment.getReplies.useQuery(
     { parentId: comment.id },
     { enabled: showReplies }
   );
 
-  const deleteCommentMutation = trpc.comment.delete.useMutation({
+  const deleteCommentMutation = rustApi.comment.delete.useMutation({
     onSuccess: () => {
       toast.success("Comment deleted");
       onDeleted?.();
@@ -53,7 +53,7 @@ export default function CommentItem({
     },
   });
 
-  const replyMutation = trpc.comment.create.useMutation({
+  const replyMutation = rustApi.comment.create.useMutation({
     onSuccess: () => {
       setReplyContent("");
       setShowReplyForm(false);
@@ -63,7 +63,7 @@ export default function CommentItem({
     },
   });
 
-  const reactMutation = trpc.comment.react.useMutation({
+  const reactMutation = rustApi.comment.react.useMutation({
     onSuccess: () => {
       utils.comment.getByPostId.invalidate({ postId });
       utils.comment.getReplies.invalidate({ parentId: comment.parentId });

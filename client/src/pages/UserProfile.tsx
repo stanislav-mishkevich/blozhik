@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useAuthState } from "@/hooks/useAuthState";
 import { Settings, Calendar, FileText, Heart, MessageCircle, Shield, Award, Ban, Bookmark, TrendingUp, Users, Home, ChevronRight, User as UserIcon } from "lucide-react";
 import { toast } from "sonner";
@@ -23,44 +23,44 @@ export default function UserProfile() {
     setActiveTab(tabFromUrl);
   }, [tabFromUrl]);
 
-  const { data: profile, isLoading } = trpc.user.getProfile.useQuery({ username });
+  const { data: profile, isLoading } = rustApi.user.getProfile.useQuery({ username });
   const userId = profile?.id || 0;
-  const { data: posts } = trpc.post.getUserPosts.useQuery({
+  const { data: posts } = rustApi.post.getUserPosts.useQuery({
     userId,
     includeUnpublished: currentUser?.id === userId,
   });
 
   // All hooks must be called before any conditional returns
-  const utils = trpc.useUtils();
+  const utils = rustApi.useUtils();
 
   const isOwnProfile = currentUser?.id === userId;
 
-  const { data: bookmarkedPosts } = trpc.bookmark.list.useQuery(
+  const { data: bookmarkedPosts } = rustApi.bookmark.list.useQuery(
     { userId },
     { enabled: isOwnProfile && !!userId }
   );
-  const { data: followers } = trpc.follow.getFollowers.useQuery(
+  const { data: followers } = rustApi.follow.getFollowers.useQuery(
     { userId },
     { enabled: !!userId }
   );
-  const { data: following } = trpc.follow.getFollowing.useQuery(
+  const { data: following } = rustApi.follow.getFollowing.useQuery(
     { userId },
     { enabled: !!userId }
   );
 
-  const followMutation = trpc.follow.toggle.useMutation({
+  const followMutation = rustApi.follow.toggle.useMutation({
     onSuccess: () => {
       utils.user.getProfile.invalidate({ userId });
     }
   });
 
-  const { data: userBadges } = trpc.badge.getUserBadges.useQuery({ userId });
-  const { data: blockStatus } = trpc.block.isBlocked.useQuery(
+  const { data: userBadges } = rustApi.badge.getUserBadges.useQuery({ userId });
+  const { data: blockStatus } = rustApi.block.isBlocked.useQuery(
     { userId },
     { enabled: !!currentUser && currentUser.id !== userId }
   );
 
-  const blockMutation = trpc.block.toggle.useMutation({
+  const blockMutation = rustApi.block.toggle.useMutation({
     onSuccess: (data) => {
       toast.success(data.blocked ? "User blocked" : "User unblocked");
       utils.block.isBlocked.invalidate({ userId });

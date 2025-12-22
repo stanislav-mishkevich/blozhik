@@ -1,17 +1,17 @@
 import { Header } from '@/components/Header';
-import { trpc } from '@/lib/trpc';
+import { rustApi } from '@/lib/rustBack';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useEffect, useState } from 'react';
 
 export default function Analytics() {
   const { user } = useAuthState();
-  const { data: posts } = trpc.post.getUserPosts.useQuery({ userId: user?.id ?? 0, includeUnpublished: true }, { enabled: !!user });
-  const { data: authorStats } = trpc.analytics.authorViews.useQuery({ userId: user?.id ?? 0, days: 30 }, { enabled: !!user });
-  const { data: topPosts } = trpc.analytics.topPosts.useQuery({ days: 30, limit: 3 }, { enabled: !!user });
-  const { data: topAuthors } = trpc.analytics.topAuthors.useQuery({ days: 30, limit: 3 }, { enabled: !!user });
+  const { data: posts } = rustApi.post.getUserPosts.useQuery({ userId: user?.id ?? 0, includeUnpublished: true }, { enabled: !!user });
+  const { data: authorStats } = rustApi.analytics.authorViews.useQuery({ userId: user?.id ?? 0, days: 30 }, { enabled: !!user });
+  const { data: topPosts } = rustApi.analytics.topPosts.useQuery({ days: 30, limit: 3 }, { enabled: !!user });
+  const { data: topAuthors } = rustApi.analytics.topAuthors.useQuery({ days: 30, limit: 3 }, { enabled: !!user });
   const [selectedPost, setSelectedPost] = useState<number | null>(null);
-  const viewsQuery = trpc.analytics.postViews.useQuery({ postId: selectedPost ?? 0, days: 30 }, { enabled: !!selectedPost });
+  const viewsQuery = rustApi.analytics.postViews.useQuery({ postId: selectedPost ?? 0, days: 30 }, { enabled: !!selectedPost });
 
   if (!user) return null;
 

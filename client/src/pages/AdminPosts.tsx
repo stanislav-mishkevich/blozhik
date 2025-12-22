@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';
 import { useLocation } from 'wouter';
@@ -29,7 +29,7 @@ export default function AdminPosts() {
   const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
 
   // Fetch posts via tRPC
-  const postsQuery = trpc.admin.posts.list.useQuery({ limit: 100 });
+  const postsQuery = rustApi.admin.posts.list.useQuery({ limit: 100 });
   const { data: postsData, isLoading, refetch } = postsQuery;
 
   // Wire posts from backend to local state
@@ -50,8 +50,8 @@ export default function AdminPosts() {
     }
   }, [postsData]);
 
-  const deleteMutation = trpc.admin.posts.delete.useMutation();
-  const featureMutation = trpc.admin.posts.feature.useMutation();
+  const deleteMutation = rustApi.admin.posts.delete.useMutation();
+  const featureMutation = rustApi.admin.posts.feature.useMutation();
 
   const handleStatusChange = async (postId: string, status: Post['status']) => {
     // TODO: implement status change endpoint on backend and call it here

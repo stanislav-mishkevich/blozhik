@@ -1,5 +1,5 @@
 import { Header } from '@/components/Header';
-import { trpc } from '@/lib/trpc';
+import { rustApi } from '@/lib/rustBack';
 import { useParams, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { useAuthState } from '@/hooks/useAuthState';
@@ -12,14 +12,14 @@ export default function PostHistory() {
   const { user } = useAuthState();
   const [, setLocation] = useLocation();
 
-  const { data: postData } = trpc.post.getById.useQuery({ postId }, { enabled: !!postId });
-  const { data: versions } = trpc.post.getVersions.useQuery({ postId }, { enabled: !!postId });
-  const revertMutation = trpc.post.revertToVersion.useMutation({ onSuccess: () => {
+    const { data: postData } = rustApi.post.getById.useQuery({ postId }, { enabled: !!postId });
+    const { data: versions } = rustApi.post.getVersions.useQuery({ postId }, { enabled: !!postId });
+    const revertMutation = rustApi.post.revertToVersion.useMutation({ onSuccess: () => {
     toast.success('Post reverted to selected version');
     setLocation(`/posts/${postId}`);
   }});
   const [selectedDiff, setSelectedDiff] = useState<string | null>(null);
-  const utils = trpc.useUtils();
+    const utils = rustApi.useUtils();
 
   const showDiff = async (versionId?: number) => {
     try {

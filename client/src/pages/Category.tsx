@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { Header } from "@/components/Header";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 
@@ -9,8 +9,8 @@ export default function CategoryPage() {
   const slug = params.slug || "";
   const [, setLocation] = useLocation();
 
-  const { data: category } = trpc.category.getBySlug.useQuery({ slug }, { enabled: !!slug });
-  const { data: posts } = trpc.post.getFeed.useQuery({ limit: 20, offset: 0, categoryId: category?.id });
+  const { data: category } = rustApi.category.getBySlug.useQuery({ slug }, { enabled: !!slug });
+  const { data: posts } = rustApi.post.getFeed.useQuery({ limit: 20, offset: 0, categoryId: category?.id });
 
   if (!category) {
     return (

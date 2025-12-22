@@ -1,0 +1,15 @@
+# ESLint ignore
+node_modules/
+dist/
+build/
+coverage/
+*.min.js
+.idea/
+.vscode/
+*.db
+*.sqlite
+*.sqlite3
+
+# Rust build artifacts
+backend/target/
+**/target/

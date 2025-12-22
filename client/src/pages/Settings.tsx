@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
 import { Save, LogOut, Upload, X } from "lucide-react";
@@ -42,7 +42,7 @@ export default function Settings() {
     }
   }, [user]);
 
-  const updateProfileMutation = trpc.user.updateProfile.useMutation({
+  const updateProfileMutation = rustApi.user.updateProfile.useMutation({
     onSuccess: () => {
       toast.success("Profile updated successfully!");
       window.location.reload();
@@ -52,7 +52,7 @@ export default function Settings() {
     },
   });
 
-  const changePasswordMutation = trpc.user.changePassword.useMutation({
+  const changePasswordMutation = rustApi.user.changePassword.useMutation({
     onSuccess: () => {
       toast.success("Password changed successfully!");
       setOldPassword("");
@@ -64,13 +64,13 @@ export default function Settings() {
     },
   });
 
-  const logoutMutation = trpc.auth.logout.useMutation({
+  const logoutMutation = rustApi.auth.logout.useMutation({
     onSuccess: () => {
       window.location.href = "/";
     },
   });
 
-  const avatarUploadUrlMutation = trpc.user.getAvatarUploadUrl.useMutation();
+  const avatarUploadUrlMutation = rustApi.user.getAvatarUploadUrl.useMutation();
 
   const handleUpdateProfile = () => {
     if (username.length < 3) {

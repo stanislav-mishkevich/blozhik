@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 
 interface AdminHeaderProps {
   title?: string;
@@ -32,7 +32,7 @@ interface AdminHeaderProps {
 export default function AdminHeader({ title, showBack = true, backUrl, children }: AdminHeaderProps) {
   const { user } = useAuthState();
   const [location, setLocation] = useLocation();
-  const logoutMutation = trpc.auth.logout.useMutation({
+  const logoutMutation = rustApi.auth.logout.useMutation({
     onSuccess: () => {
       window.location.href = "/";
     },

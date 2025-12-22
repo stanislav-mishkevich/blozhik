@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { trpc } from '@/lib/trpc';
+import { rustApi } from '@/lib/rustBack';
 import { toast } from 'sonner';
 import { Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
@@ -18,7 +18,7 @@ export default function ImageUploader({ onImageUploaded, maxSizeMB = 5 }: ImageU
   const [imageUrl, setImageUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadUrlMutation = trpc.post.getImageUploadUrl.useMutation();
+  const uploadUrlMutation = rustApi.post.getImageUploadUrl.useMutation();
 
   const compressImage = async (file: File, maxSizeMB: number): Promise<Blob> => {
     return new Promise((resolve, reject) => {

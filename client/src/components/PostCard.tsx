@@ -2,7 +2,7 @@ import { Heart, MessageCircle, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
 
@@ -32,9 +32,9 @@ interface PostCardProps {
 
 export function PostCard({ post, author, tags, likeCount, commentCount, isLiked, isBookmarked, category }: PostCardProps) {
   const { isAuthenticated } = useAuthState();
-  const utils = trpc.useUtils();
+  const utils = rustApi.useUtils();
   
-  const likeMutation = trpc.like.toggle.useMutation({
+  const likeMutation = rustApi.like.toggle.useMutation({
     onSuccess: () => {
       utils.post.getFeed.invalidate();
     },
@@ -53,7 +53,7 @@ export function PostCard({ post, author, tags, likeCount, commentCount, isLiked,
     likeMutation.mutate({ postId: post.id });
   };
 
-  const bookmarkMutation = trpc.bookmark.toggle.useMutation({
+  const bookmarkMutation = rustApi.bookmark.toggle.useMutation({
     onSuccess: () => {
       utils.post.getFeed.invalidate();
     },

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';
 import { useLocation } from 'wouter';
@@ -37,11 +37,11 @@ export default function AdminUsers() {
     status: filters.status || undefined,
   };
 
-  const { data: usersData, refetch } = trpc.admin.users.list.useQuery(queryFilters as any);
-  const updateRoleMutation = trpc.admin.users.updateRole.useMutation();
-  const banMutation = trpc.admin.users.ban.useMutation();
-  const unbanMutation = trpc.admin.users.unban.useMutation();
-  const deleteMutation = trpc.admin.users.delete.useMutation();
+  const { data: usersData, refetch } = rustApi.admin.users.list.useQuery(queryFilters as any);
+  const updateRoleMutation = rustApi.admin.users.updateRole.useMutation();
+  const banMutation = rustApi.admin.users.ban.useMutation();
+  const unbanMutation = rustApi.admin.users.unban.useMutation();
+  const deleteMutation = rustApi.admin.users.delete.useMutation();
 
   useEffect(() => {
     if (usersData) {

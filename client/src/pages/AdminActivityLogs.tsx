@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { trpc } from '../lib/trpc';
+import { rustApi } from '../lib/rustBack';
 import AdminHeader from '../components/AdminHeader';
 import AdminNav from '../components/AdminNav';
 import { useLocation } from 'wouter';
@@ -60,7 +60,7 @@ export default function AdminActivityLogs() {
   });
 
   // Получаем реальные данные из audit_logs
-  const { data: logsData, refetch, isLoading } = trpc.admin.auditLogs.list.useQuery({
+  const { data: logsData, refetch, isLoading } = rustApi.admin.auditLogs.list.useQuery({
     limit: filters.limit,
     action: filters.activityType || undefined,
   });

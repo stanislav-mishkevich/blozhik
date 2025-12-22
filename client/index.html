@@ -1,15 +1,16 @@
 <!doctype html>
 <html lang="en">
-
   <head>
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+      content="width=device-width, initial-scale=1.0, maximum-scale=1"
+    />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https: ws: wss:; worker-src 'self' blob:;" />
-    <title>BLOZHIK</title>    
+      content="default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https: ws: wss:; worker-src 'self' blob:;"
+    />
+    <title>BLOZHIK</title>
     <!-- THIS IS THE START OF A COMMENT BLOCK, BLOCK TO BE DELETED: Google Fonts here, example:
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -20,12 +21,75 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- TEMPORARY DEV: remove cached bundles and unregister service workers early -->
+    <script>
+      (function () {
+        try {
+          // Run as early as possible to avoid old SW/bundles executing.
+          if ("serviceWorker" in navigator || "caches" in window) {
+            Promise.all([
+              (navigator.serviceWorker &&
+              navigator.serviceWorker.getRegistrations
+                ? navigator.serviceWorker.getRegistrations()
+                : Promise.resolve([])
+              ).then(function (regs) {
+                return Promise.all(
+                  regs.map(function (r) {
+                    try {
+                      return r.unregister();
+                    } catch (e) {
+                      return null;
+                    }
+                  })
+                );
+              }),
+              window.caches && caches.keys
+                ? caches.keys().then(function (keys) {
+                    return Promise.all(
+                      keys.map(function (k) {
+                        try {
+                          return caches.delete(k);
+                        } catch (e) {
+                          return null;
+                        }
+                      })
+                    );
+                  })
+                : Promise.resolve([]),
+            ])
+              .then(function () {
+                // Small delay to make sure unregister has propagated
+                setTimeout(function () {
+                  try {
+                    if (location.search.indexOf("swcleared") === -1)
+                      location.replace(
+                        location.pathname +
+                          location.search +
+                          (location.search ? "&" : "?") +
+                          "swcleared=1"
+                      );
+                  } catch (e) {
+                    location.reload(true);
+                  }
+                }, 400);
+              })
+              .catch(function (err) {
+                console.warn("[DEV] SW/caches cleanup failed early", err);
+              });
+          }
+        } catch (e) {
+          console.warn("[DEV] SW cleanup threw", e);
+        }
+      })();
+    </script>
     <script type="module">
       // Use helper in client code to inject analytics only when configured.
-      import('/src/lib/analytics.ts').then(({ default: injectUmamiIfConfigured }) => {
-        injectUmamiIfConfigured();
-      });
+      import("/src/lib/analytics.ts").then(
+        ({ default: injectUmamiIfConfigured }) => {
+          injectUmamiIfConfigured();
+        }
+      );
     </script>
   </body>
-
 </html>

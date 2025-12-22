@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useAuthState } from "@/hooks/useAuthState";
 import { toast } from "sonner";
 import { X, Save, Send } from "lucide-react";
@@ -24,7 +24,7 @@ export default function AdminCreatePost() {
   const [tags, setTags] = useState<string[]>([]);
   const [excerpt, setExcerpt] = useState("");
 
-  const createMutation = trpc.post.create.useMutation({
+  const createMutation = rustApi.post.create.useMutation({
     onSuccess: (data) => {
       toast.success("Post created successfully!");
       setLocation(`/posts/${data.postId}`);

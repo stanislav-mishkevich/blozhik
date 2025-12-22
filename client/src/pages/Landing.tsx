@@ -4,17 +4,17 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { PostCard } from "@/components/PostCard";
 import { useAuthState } from "@/hooks/useAuthState";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { Sparkles, Users, Zap, BookOpen } from "lucide-react";
 
 export default function Landing() {
   const { isAuthenticated, loading } = useAuthState();
   const [, setLocation] = useLocation();
-  const { data: topPosts } = trpc.post.getFeed.useQuery({
+  const { data: topPosts } = rustApi.post.getFeed.useQuery({
     limit: 6,
     sortBy: "popular",
   });
-  const { data: trending } = trpc.post.getFeed.useQuery({ limit: 3, sortBy: 'trending' });
+  const { data: trending } = rustApi.post.getFeed.useQuery({ limit: 3, sortBy: 'trending' });
 
   useEffect(() => {
     if (!loading && isAuthenticated) {

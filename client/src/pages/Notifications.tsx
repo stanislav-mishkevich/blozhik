@@ -1,5 +1,5 @@
 import { Header } from "@/components/Header";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { Button } from "@/components/ui/button";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useEffect } from "react";
@@ -9,22 +9,22 @@ import { Home, ChevronRight, Bell, Heart, MessageCircle, User, Bookmark, UserPlu
 export default function Notifications() {
   const { user } = useAuthState();
   const [, setLocation] = useLocation();
-  const utils = trpc.useUtils();
-  const { data: notifications, refetch } = trpc.notification.list.useQuery({ limit: 50, offset: 0 }, { enabled: !!user });
-  const { data: announcements } = trpc.announcement.getActive.useQuery();
-  const markReadMutation = trpc.notification.markRead.useMutation({ 
+  const utils = rustApi.useUtils();
+  const { data: notifications, refetch } = rustApi.notification.list.useQuery({ limit: 50, offset: 0 }, { enabled: !!user });
+  const { data: announcements } = rustApi.announcement.getActive.useQuery();
+  const markReadMutation = rustApi.notification.markRead.useMutation({ 
     onSuccess: () => {
       refetch();
       utils.notification.unreadCount.invalidate();
     }
   });
-  const deleteMutation = trpc.notification.delete.useMutation({ 
+  const deleteMutation = rustApi.notification.delete.useMutation({ 
     onSuccess: () => {
       refetch();
       utils.notification.unreadCount.invalidate();
     }
   });
-  const clearAllMutation = trpc.notification.clearAll.useMutation({ 
+  const clearAllMutation = rustApi.notification.clearAll.useMutation({ 
     onSuccess: () => {
       refetch();
       utils.notification.unreadCount.invalidate();

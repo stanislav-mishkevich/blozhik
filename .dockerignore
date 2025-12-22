@@ -1,0 +1,20 @@
+# Docker ignore - keep image small
+node_modules/
+.pnpm-store/
+.git
+.dist
+dist/
+build/
+*.log
+.env*
+coverage/
+.DS_Store
+.vscode/
+*.db
+*.sqlite
+*.sqlite3
+
+# If backend is built inside image
+backend/target/
+client/dist/
+

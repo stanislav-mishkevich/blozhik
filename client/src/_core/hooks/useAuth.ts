@@ -1,5 +1,5 @@
 import { getLoginUrl } from "@/const";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
 
@@ -11,14 +11,14 @@ type UseAuthOptions = {
 export function useAuth(options?: UseAuthOptions) {
   const { redirectOnUnauthenticated = false, redirectPath = getLoginUrl() } =
     options ?? {};
-  const utils = trpc.useUtils();
+  const utils = rustApi.useUtils();
 
-  const meQuery = trpc.auth.me.useQuery(undefined, {
+  const meQuery = rustApi.auth.me.useQuery(undefined, {
     retry: false,
     refetchOnWindowFocus: false,
   });
 
-  const logoutMutation = trpc.auth.logout.useMutation({
+  const logoutMutation = rustApi.auth.logout.useMutation({
     onSuccess: () => {
       utils.auth.me.setData(undefined, null);
     },
@@ -30,7 +30,7 @@ export function useAuth(options?: UseAuthOptions) {
     } catch (error: unknown) {
       if (
         error instanceof TRPCClientError &&
-        error.data?.code === "UNAUTHORIZED"
+        (error.data?.code === "UNAUTHORIZED" || error.data?.code === 10001)
       ) {
         return;
       }

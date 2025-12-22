@@ -2,17 +2,17 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import { Header } from "@/components/Header";
 import { PostCard } from "@/components/PostCard";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { Button } from "@/components/ui/button";
 import { useAuthState } from "@/hooks/useAuthState";
 
 export default function Saved() {
   const [, setLocation] = useLocation();
   const { user } = useAuthState();
-  const { data: bookmarks } = trpc.bookmark.list.useQuery({ userId: user?.id });
+  const { data: bookmarks } = rustApi.bookmark.list.useQuery({ userId: user?.id });
   // We'll fetch posts in client as `post.getById` per bookmark
-  const postQueries = (bookmarks || []).map(bm => trpc.post.getById.useQuery({ postId: bm.post.id }));
-  const utils = trpc.useUtils();
+  const postQueries = (bookmarks || []).map(bm => rustApi.post.getById.useQuery({ postId: bm.post.id }));
+  const utils = rustApi.useUtils();
 
   useEffect(() => {
     // If visiting saved page, and user exists, re-fetch
@@ -43,7 +43,7 @@ export default function Saved() {
 }
 
 function BookmarkRow({ postId }: { postId: number }) {
-  const { data } = trpc.post.getById.useQuery({ postId });
+  const { data } = rustApi.post.getById.useQuery({ postId });
   if (!data || !data.author) return null;
   return (
     <PostCard

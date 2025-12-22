@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useTheme } from "@/contexts/ThemeContext";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { useState, useEffect } from "react";
 import {
   DropdownMenu,
@@ -18,8 +18,8 @@ export function Header() {
   const { theme, toggleTheme } = useTheme();
   const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
-  const logoutMutation = trpc.auth.logout.useMutation();
-  const { data: unread, refetch: refetchUnread } = trpc.notification.unreadCount.useQuery(undefined, { enabled: isAuthenticated });
+  const logoutMutation = rustApi.auth.logout.useMutation();
+  const { data: unread, refetch: refetchUnread } = rustApi.notification.unreadCount.useQuery(undefined, { enabled: isAuthenticated });
 
   // Subscribe to SSE to update unread count in header
   useEffect(() => {

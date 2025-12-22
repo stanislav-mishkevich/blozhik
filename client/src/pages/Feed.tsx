@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { AnnouncementPopup } from "@/components/AnnouncementPopup";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import { TrendingUp, Clock, Heart, Tag, Users, Sparkles, Zap, Filter } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,18 +42,18 @@ export default function Feed() {
   const [popupAnnouncement, setPopupAnnouncement] = useState<any>(null);
   const limit = 20;
 
-  const { data: popularTags } = trpc.tag.getPopular.useQuery({ limit: 10 });
-  const { data: categories } = trpc.category.getPopular.useQuery({ limit: 10 });
-  const { data: trendingTags } = trpc.tag.getTrending.useQuery({ days: 7, limit: 10 });
-  const { data: announcements } = trpc.announcement.getActive.useQuery();
+  const { data: popularTags } = rustApi.tag.getPopular.useQuery({ limit: 10 });
+  const { data: categories } = rustApi.category.getPopular.useQuery({ limit: 10 });
+  const { data: trendingTags } = rustApi.tag.getTrending.useQuery({ days: 7, limit: 10 });
+  const { data: announcements } = rustApi.announcement.getActive.useQuery();
   
-  const { data: tagData } = trpc.tag.getByName.useQuery(
+  const { data: tagData } = rustApi.tag.getByName.useQuery(
     { name: tagParam || "" },
     { enabled: !!tagParam }
   );
-  const { data: categoryData } = trpc.category.getBySlug.useQuery({ slug: categoryParam || "" }, { enabled: !!categoryParam });
+  const { data: categoryData } = rustApi.category.getBySlug.useQuery({ slug: categoryParam || "" }, { enabled: !!categoryParam });
 
-  const { data: posts, isLoading } = trpc.post.getFeed.useQuery({
+  const { data: posts, isLoading } = rustApi.post.getFeed.useQuery({
     limit,
     offset,
     sortBy,
@@ -61,7 +61,7 @@ export default function Feed() {
     categoryId: categoryData?.id,
     followingOnly: followingOnly ? true : undefined,
   });
-  const { data: trending } = trpc.post.getFeed.useQuery({ limit: 5, offset: 0, sortBy: 'trending' }, { enabled: true });
+  const { data: trending } = rustApi.post.getFeed.useQuery({ limit: 5, offset: 0, sortBy: 'trending' }, { enabled: true });
 
   // Load dismissed announcements from localStorage
   useEffect(() => {

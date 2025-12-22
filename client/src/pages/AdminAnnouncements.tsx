@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
+import { rustApi } from "@/lib/rustBack";
 import AdminHeader from "@/components/AdminHeader";
 import AdminNav from "@/components/AdminNav";
 import { useLocation } from "wouter";
@@ -36,9 +36,9 @@ export default function AdminAnnouncements() {
   const [targetAudience, setTargetAudience] = useState<"all" | "new_users" | "admins" | "specific">("all");
   const [targetUserIds, setTargetUserIds] = useState("");
 
-  const { data: announcements, refetch } = trpc.admin.announcements.list.useQuery();
+  const { data: announcements, refetch } = rustApi.admin.announcements.list.useQuery();
 
-  const createMutation = trpc.admin.announcements.create.useMutation({
+  const createMutation = rustApi.admin.announcements.create.useMutation({
     onSuccess: () => {
       toast.success("Announcement created");
       refetch();
@@ -49,7 +49,7 @@ export default function AdminAnnouncements() {
     },
   });
 
-  const deleteMutation = trpc.admin.announcements.delete.useMutation({
+  const deleteMutation = rustApi.admin.announcements.delete.useMutation({
     onSuccess: () => {
       toast.success("Announcement deleted");
       refetch();
