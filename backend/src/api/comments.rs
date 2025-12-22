@@ -1,21 +1,23 @@
-use ntex::web::{HttpResponse, HttpRequest};
-use ntex::web::types::{Json, Path};
-use ntex::web;
-use serde::Deserialize;
-use sqlx::SqlitePool;
-use crate::services::comment_service;
 use crate::models::comment::NewComment;
-
+use crate::services::comment_service;
+use ntex::web;
+use ntex::web::types::{Json, Path};
+use ntex::web::{HttpRequest, HttpResponse};
+use serde::Deserialize;
 #[derive(Deserialize)]
-struct CreateCommentBody {
-    body: String,
+pub struct CreateCommentBody {
+    pub body: String,
 }
 
 pub fn routes(cfg: &mut web::ServiceConfig) {
     cfg.service(web::resource("/posts/{postId}/comments").route(web::post().to(post_comment)));
 }
 
-pub async fn post_comment(req: HttpRequest, path: Path<(i64,)>, body: Json<CreateCommentBody>) -> HttpResponse {
+pub async fn post_comment(
+    req: HttpRequest,
+    path: Path<(i64,)>,
+    body: Json<CreateCommentBody>,
+) -> HttpResponse {
     let pool = match crate::db::create_pool().await {
         Ok(p) => p,
         Err(e) => return HttpResponse::InternalServerError().body(format!("db error: {}", e)),
