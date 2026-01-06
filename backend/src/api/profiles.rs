@@ -1,21 +1,22 @@
-use ntex::web::{HttpRequest, HttpResponse, Path, Json};
+use ntex::web::{self, HttpRequest, HttpResponse};
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::db;
 use crate::services::profiles_service;
 
-pub async fn get_profile(req: HttpRequest, path: Path<(String,)>) -> HttpResponse {
+pub async fn get_profile(_req: HttpRequest, path: web::types::Path<(String,)>) -> HttpResponse {
     let username = path.into_inner().0;
-    let pool = match db::get_pool() {
-        Some(p) => p,
-        None => return HttpResponse::InternalServerError().json(json!({"error":"db pool not ready"})),
+    let pool = match crate::db::create_pool().await {
+        Ok(p) => p,
+        Err(e) => return HttpResponse::InternalServerError().body(format!("db error: {}", e)),
     };
+
     match profiles_service::get_profile(&pool, &username).await {
-        Ok(profile) => HttpResponse::Ok().json(profile),
+        Ok(profile) => HttpResponse::Ok().json(&profile),
         Err(e) => {
-            log::error!("get_profile error: {:?}", e);
-            HttpResponse::NotFound().json(json!({"error":"profile not found"}))
+            tracing::error!("get_profile error: {:?}", e);
+            let body = json!({"error":"profile not found"});
+            HttpResponse::NotFound().json(&body)
         }
     }
 }
@@ -23,39 +24,57 @@ pub async fn get_profile(req: HttpRequest, path: Path<(String,)>) -> HttpRespons
 #[derive(Deserialize)]
 struct FollowBody { follow: bool }
 
-pub async fn post_follow(req: HttpRequest, path: Path<(String,)>, body: Json<FollowBody>) -> HttpResponse {
+pub async fn post_follow(req: HttpRequest, path: web::types::Path<(String,)>, body: web::types::Json<FollowBody>) -> HttpResponse {
     // Authenticate user (simplified test harness expects to use JWT and get user id)
     let auth_user_id = match crate::auth::jwt::extract_user_id_from_request(&req) {
         Ok(id) => id,
-        Err(_) => return HttpResponse::Unauthorized().json(json!({"error":"unauthorized"})),
+        Err(_) => {
+            let body = json!({"error":"unauthorized"});
+            return HttpResponse::Unauthorized().json(&body);
+        }
     };
 
     let username = path.into_inner().0;
-    let pool = match db::get_pool() {
-        Some(p) => p,
-        None => return HttpResponse::InternalServerError().json(json!({"error":"db pool not ready"})),
+    let pool = match crate::db::create_pool().await {
+        Ok(p) => p,
+        Err(e) => return HttpResponse::InternalServerError().body(format!("db error: {}", e)),
     };
 
     // lookup followee id
-    let followee_id = match sqlx::query_scalar!("SELECT id FROM users WHERE username = ?", username).fetch_one(&pool).await {
+    let followee_id: i64 = match sqlx::query_scalar("SELECT id FROM users WHERE username = ?")
+        .bind(&username)
+        .fetch_one(&pool)
+        .await
+    {
         Ok(id) => id,
-        Err(_) => return HttpResponse::NotFound().json(json!({"error":"user not found"})),
+        Err(_) => {
+            let body = json!({"error":"user not found"});
+            return HttpResponse::NotFound().json(&body);
+        }
     };
 
     if body.follow {
         match profiles_service::follow_user(&pool, auth_user_id, followee_id).await {
-            Ok(_) => HttpResponse::Ok().json(json!({"followed": true})),
+            Ok(_) => {
+                let body = json!({"followed": true});
+                HttpResponse::Ok().json(&body)
+            },
             Err(e) => {
-                log::error!("follow error: {:?}", e);
-                HttpResponse::InternalServerError().json(json!({"error":"could not follow"}))
+                tracing::error!("follow error: {:?}", e);
+                let body = json!({"error":"could not follow"});
+                HttpResponse::InternalServerError().json(&body)
             }
         }
     } else {
         match profiles_service::unfollow_user(&pool, auth_user_id, followee_id).await {
-            Ok(_) => HttpResponse::Ok().json(json!({"followed": false})),
+            Ok(_) => {
+                let body = json!({"followed": false});
+                HttpResponse::Ok().json(&body)
+            },
             Err(e) => {
-                log::error!("unfollow error: {:?}", e);
-                HttpResponse::InternalServerError().json(json!({"error":"could not unfollow"}))
+                tracing::error!("unfollow error: {:?}", e);
+                let body = json!({"error":"could not unfollow"});
+                HttpResponse::InternalServerError().json(&body)
             }
         }
     }

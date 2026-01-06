@@ -1,4 +1,4 @@
-use sqlx::sqlite::SqlitePool;
+pub use sqlx::sqlite::SqlitePool;
 use std::env;
 
 pub async fn create_pool() -> Result<SqlitePool, sqlx::Error> {

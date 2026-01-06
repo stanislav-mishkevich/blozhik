@@ -11,24 +11,24 @@ pub struct SearchResult {
 
 pub async fn search_posts(pool: &SqlitePool, q: &str, limit: i64, offset: i64) -> Result<Vec<SearchResult>, sqlx::Error> {
     // Use FTS5 match operator
-    let rows = sqlx::query!(
-        r#"SELECT p.id as id, p.title as title, p.slug as slug, snippet(posts_fts, 0, '<b>', '</b>', '...', 10) as excerpt
+    let rows = sqlx::query_as::<_, (i64, String, String, Option<String>)>(
+        r#"SELECT p.id, p.title, p.slug, snippet(posts_fts, 0, '<b>', '</b>', '...', 10) as excerpt
            FROM posts_fts f JOIN posts p ON f.rowid = p.id
            WHERE posts_fts MATCH ?
            ORDER BY rank
-           LIMIT ? OFFSET ?"#,
-        q,
-        limit,
-        offset
+           LIMIT ? OFFSET ?"#
     )
+    .bind(q)
+    .bind(limit)
+    .bind(offset)
     .fetch_all(pool)
     .await?;
 
-    let results = rows.into_iter().map(|r| SearchResult {
-        id: r.id,
-        title: r.title,
-        slug: r.slug,
-        excerpt: r.excerpt,
+    let results = rows.into_iter().map(|(id, title, slug, excerpt)| SearchResult {
+        id,
+        title,
+        slug,
+        excerpt,
     }).collect();
 
     Ok(results)

@@ -1,0 +1,56 @@
+{
+  "db_name": "SQLite",
+  "query": "SELECT u.id as id, u.username as username, u.display_name as display_name, u.bio as bio, u.avatar_url as avatar_url,\n            (SELECT COUNT(*) FROM follows f WHERE f.followee_id = u.id) as follower_count,\n            (SELECT COUNT(*) FROM follows f2 WHERE f2.follower_id = u.id) as following_count\n           FROM users u WHERE u.username = ?",
+  "describe": {
+    "columns": [
+      {
+        "name": "id",
+        "ordinal": 0,
+        "type_info": "Int64"
+      },
+      {
+        "name": "username",
+        "ordinal": 1,
+        "type_info": "Text"
+      },
+      {
+        "name": "display_name",
+        "ordinal": 2,
+        "type_info": "Text"
+      },
+      {
+        "name": "bio",
+        "ordinal": 3,
+        "type_info": "Text"
+      },
+      {
+        "name": "avatar_url",
+        "ordinal": 4,
+        "type_info": "Text"
+      },
+      {
+        "name": "follower_count",
+        "ordinal": 5,
+        "type_info": "Null"
+      },
+      {
+        "name": "following_count",
+        "ordinal": 6,
+        "type_info": "Null"
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      true,
+      false,
+      true,
+      true,
+      true,
+      null,
+      null
+    ]
+  },
+  "hash": "81243fc95ad3d1de6e7434e2b9b467cc10e593a64f0bd39a897a2879ba695086"
+}

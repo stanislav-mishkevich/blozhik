@@ -18,10 +18,12 @@ pub async fn spawn_server() -> String {
                 ntex::web::App::new()
                     .service(
                         ntex::web::scope("/api").configure(|cfg| {
-                            // register API routes (posts, comments, reactions)
+                            // register all API routes
                             blozhik_backend::api::posts::routes(cfg);
                             blozhik_backend::api::comments::routes(cfg);
                             blozhik_backend::api::reactions::routes(cfg);
+                            blozhik_backend::api::search::routes(cfg);
+                            blozhik_backend::api::profiles::routes(cfg);
                         }),
                     )
                     .service(

@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "DELETE FROM follows WHERE follower_id = ?1 AND followee_id = ?2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "365827d43112d793b1073ed61926906328f1beff2f6306460d3e00b5fe43c3d5"
+}
