@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { SEO } from "@/components/SEO";
 import { ShareButtons } from "@/components/ShareButtons";
@@ -182,11 +182,12 @@ export default function PostView() {
           {/* Author Info */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Avatar className="h-12 w-12 border-2 border-black">
-                <AvatarFallback className="bg-gray-200 text-black font-semibold">
-                  {getInitials(author?.name || null, author?.username || null)}
-                </AvatarFallback>
-              </Avatar>
+            <Avatar className="h-12 w-12 border-2 border-black">
+              <AvatarImage src={author?.avatarUrl || undefined} />
+              <AvatarFallback className="bg-gray-200 text-black font-semibold">
+                {getInitials(author?.name || null, author?.username || null)}
+              </AvatarFallback>
+            </Avatar>
               <div>
                 <button
                   onClick={() => setLocation(`/users/${author?.username}`)}

@@ -1,10 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useLocation, useSearch } from "wouter";
 import { Header } from "@/components/Header";
 import { PostCard } from "@/components/PostCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+import { AnnouncementPopup } from "@/components/AnnouncementPopup";
 import { trpc } from "@/lib/trpc";
 import { TrendingUp, Clock, Heart, Tag, Users, Sparkles, Zap, Filter } from "lucide-react";
 import { toast } from "sonner";
@@ -36,11 +38,14 @@ export default function Feed() {
   const [offset, setOffset] = useState(0);
   const [followingOnly, setFollowingOnly] = useState(false);
   const [activeView, setActiveView] = useState<"all" | "trending" | "explore">("all");
+  const [dismissedAnnouncements, setDismissedAnnouncements] = useState<number[]>([]);
+  const [popupAnnouncement, setPopupAnnouncement] = useState<any>(null);
   const limit = 20;
 
   const { data: popularTags } = trpc.tag.getPopular.useQuery({ limit: 10 });
   const { data: categories } = trpc.category.getPopular.useQuery({ limit: 10 });
   const { data: trendingTags } = trpc.tag.getTrending.useQuery({ days: 7, limit: 10 });
+  const { data: announcements } = trpc.announcement.getActive.useQuery();
   
   const { data: tagData } = trpc.tag.getByName.useQuery(
     { name: tagParam || "" },
@@ -58,6 +63,41 @@ export default function Feed() {
   });
   const { data: trending } = trpc.post.getFeed.useQuery({ limit: 5, offset: 0, sortBy: 'trending' }, { enabled: true });
 
+  // Load dismissed announcements from localStorage
+  useEffect(() => {
+    const dismissed = localStorage.getItem("dismissedAnnouncements");
+    if (dismissed) {
+      try {
+        setDismissedAnnouncements(JSON.parse(dismissed));
+      } catch (e) {
+        console.error("Failed to parse dismissed announcements", e);
+      }
+    }
+  }, []);
+
+  // Show popup for first non-dismissed announcement
+  useEffect(() => {
+    if (announcements && announcements.length > 0) {
+      const firstActive = announcements.find(a => !dismissedAnnouncements.includes(a.id));
+      if (firstActive && !popupAnnouncement) {
+        setPopupAnnouncement(firstActive);
+      }
+    }
+  }, [announcements, dismissedAnnouncements]);
+
+  const handleDismissAnnouncement = (id: number) => {
+    const newDismissed = [...dismissedAnnouncements, id];
+    setDismissedAnnouncements(newDismissed);
+    localStorage.setItem("dismissedAnnouncements", JSON.stringify(newDismissed));
+  };
+
+  const handleClosePopup = (id: number) => {
+    handleDismissAnnouncement(id);
+    setPopupAnnouncement(null);
+  };
+
+  const activeBannerAnnouncements = announcements?.filter(a => !dismissedAnnouncements.includes(a.id)) || [];
+
   const handleLoadMore = () => {
     setOffset((prev) => prev + limit);
   };
@@ -69,6 +109,14 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+
+      {/* Popup for first announcement */}
+      {popupAnnouncement && (
+        <AnnouncementPopup
+          announcement={popupAnnouncement}
+          onClose={handleClosePopup}
+        />
+      )}
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -259,6 +307,19 @@ export default function Feed() {
 
           {/* Sidebar */}
           <aside className="lg:w-80 space-y-6">
+            {/* Announcements Banner */}
+            {activeBannerAnnouncements.length > 0 && (
+              <div className="space-y-3">
+                {activeBannerAnnouncements.map(announcement => (
+                  <AnnouncementBanner
+                    key={announcement.id}
+                    announcement={announcement}
+                    onDismiss={handleDismissAnnouncement}
+                  />
+                ))}
+              </div>
+            )}
+
             {/* Popular Tags */}
             <div className="bg-white border-2 border-black rounded-lg p-6 sketch-shadow">
               <h3 className="font-bold text-lg mb-4 flex items-center gap-2">

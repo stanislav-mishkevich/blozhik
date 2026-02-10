@@ -912,7 +912,7 @@ CMD ["node", "dist/server.js"]
 
 \`\`\`dockerfile
 HEALTHCHECK --interval=30s --timeout=3s \\
-  CMD wget --quiet --tries=1 --spider http://localhost:3000/health || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:3030/health || exit 1
 \`\`\`
 
 ## Don't Store Secrets
@@ -973,7 +973,7 @@ spec:
       - name: app
         image: my-app:1.0
         ports:
-        - containerPort: 3000
+        - containerPort: 3030
 \`\`\`
 
 ## Service Definition
@@ -988,7 +988,7 @@ spec:
     app: my-app
   ports:
   - port: 80
-    targetPort: 3000
+    targetPort: 3030
   type: LoadBalancer
 \`\`\`
 

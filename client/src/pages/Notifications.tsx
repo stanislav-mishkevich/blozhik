@@ -4,14 +4,21 @@ import { Button } from "@/components/ui/button";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { Home, ChevronRight, Bell, Heart, MessageCircle, User, Bookmark, UserPlus } from "lucide-react";
+import { Home, ChevronRight, Bell, Heart, MessageCircle, User, Bookmark, UserPlus, Info, AlertTriangle, XCircle, CheckCircle, Megaphone, Trash2, Check } from "lucide-react";
 
 export default function Notifications() {
   const { user } = useAuthState();
   const [, setLocation] = useLocation();
   const utils = trpc.useUtils();
   const { data: notifications, refetch } = trpc.notification.list.useQuery({ limit: 50, offset: 0 }, { enabled: !!user });
+  const { data: announcements } = trpc.announcement.getActive.useQuery();
   const markReadMutation = trpc.notification.markRead.useMutation({ 
+    onSuccess: () => {
+      refetch();
+      utils.notification.unreadCount.invalidate();
+    }
+  });
+  const deleteMutation = trpc.notification.delete.useMutation({ 
     onSuccess: () => {
       refetch();
       utils.notification.unreadCount.invalidate();
@@ -79,6 +86,77 @@ export default function Notifications() {
             )}
           </div>
           
+          {/* Announcements Section */}
+          {announcements && announcements.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+                <Megaphone className="h-5 w-5" />
+                Announcements
+              </h3>
+              <div className="space-y-3">
+                {announcements.map((announcement) => {
+                  const getIcon = () => {
+                    switch (announcement.type) {
+                      case "info":
+                        return <Info className="h-5 w-5 text-blue-500" />;
+                      case "warning":
+                        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+                      case "error":
+                        return <XCircle className="h-5 w-5 text-red-500" />;
+                      case "success":
+                        return <CheckCircle className="h-5 w-5 text-green-500" />;
+                      default:
+                        return <Info className="h-5 w-5 text-blue-500" />;
+                    }
+                  };
+
+                  const getStyles = () => {
+                    switch (announcement.type) {
+                      case "info":
+                        return "border-blue-500 bg-blue-50";
+                      case "warning":
+                        return "border-yellow-500 bg-yellow-50";
+                      case "error":
+                        return "border-red-500 bg-red-50";
+                      case "success":
+                        return "border-green-500 bg-green-50";
+                      default:
+                        return "border-blue-500 bg-blue-50";
+                    }
+                  };
+
+                  return (
+                    <div
+                      key={announcement.id}
+                      className={`p-3 sm:p-4 border-2 rounded-lg ${getStyles()}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-1">{getIcon()}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm mb-1">{announcement.title}</p>
+                          <p className="text-sm whitespace-pre-wrap">{announcement.content}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(announcement.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          
+          {/* Regular Notifications */}
+          {notifications && notifications.length > 0 && (
+            <h3 className="font-bold text-lg mb-3">Activity</h3>
+          )}
+
           {notifications && notifications.length > 0 ? (
             <div className="space-y-3">
               {notifications.map((item: any) => {
@@ -117,42 +195,75 @@ export default function Notifications() {
                     setLocation(`/posts/${post.id}`);
                   }
                 };
+
+                const handleMarkRead = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  markReadMutation.mutate({ notificationId: n.id });
+                };
+
+                const handleDelete = (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  deleteMutation.mutate({ notificationId: n.id });
+                };
                 
                 return (
-                  <button
+                  <div
                     key={n.id}
-                    onClick={handleClick}
-                    className={`w-full text-left p-3 sm:p-4 border-2 rounded-lg transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] ${
+                    className={`relative p-3 sm:p-4 border-2 rounded-lg transition-all ${
                       n.read ? 'border-gray-200 bg-white' : 'border-black bg-yellow-50'
                     }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="flex-shrink-0 mt-1">
-                        {getNotificationIcon()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-sm mb-1">{getNotificationText()}</p>
-                        {post && (
-                          <p className="text-sm text-gray-600 line-clamp-1 mb-1">
-                            "{post.title}"
-                          </p>
-                        )}
-                        <p className="text-xs text-gray-500">
-                          {new Date(n.createdAt).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                      </div>
-                      {!n.read && (
-                        <div className="flex-shrink-0">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <button
+                      onClick={handleClick}
+                      className="w-full text-left hover:opacity-80 transition-opacity"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="flex-shrink-0 mt-1">
+                          {getNotificationIcon()}
                         </div>
+                        <div className="flex-1 min-w-0 pr-16">
+                          <p className="font-bold text-sm mb-1">{getNotificationText()}</p>
+                          {post && (
+                            <p className="text-sm text-gray-600 line-clamp-1 mb-1">
+                              "{post.title}"
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-500">
+                            {new Date(n.createdAt).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                    <div className="absolute top-3 right-3 flex items-center gap-1">
+                      {!n.read && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleMarkRead}
+                          disabled={markReadMutation.isPending}
+                          className="h-8 w-8 p-0 hover:bg-green-100"
+                          title="Mark as read"
+                        >
+                          <Check className="h-4 w-4 text-green-600" />
+                        </Button>
                       )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleDelete}
+                        disabled={deleteMutation.isPending}
+                        className="h-8 w-8 p-0 hover:bg-red-100"
+                        title="Delete"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
                     </div>
-                  </button>
+                  </div>
                 );
               })}
             </div>

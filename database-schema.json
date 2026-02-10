@@ -1,0 +1,1495 @@
+{
+  "generatedAt": "2025-12-18T00:00:00Z",
+  "dialect": "sqlite",
+  "schemaSource": "drizzle/schema.ts",
+  "migrations": [
+    "drizzle/0000_gifted_shinko_yamashiro.sql",
+    "drizzle/0000_daily_micromax.sql",
+    "drizzle/0001_petite_the_santerians.sql.ignore",
+    "drizzle/0002_add_follow_bookmark_category.sql",
+    "drizzle/0003_add_notifications.sql",
+    "drizzle/0004_add_comments_parent.sql",
+    "drizzle/0005_add_post_versions.sql",
+    "drizzle/0006_add_scheduled_at.sql",
+    "drizzle/0007_add_post_views.sql",
+    "drizzle/0008_add_reports_audit_updates.sql",
+    "drizzle/0009_add_featured_hidden_announcements.sql",
+    "drizzle/0010_add_reports_blocks_badges.sql",
+    "drizzle/0011_add_comment_reactions.sql",
+    "drizzle/0012_migrate_reactions_to_emojis.sql",
+    "drizzle/0013_add_post_reactions.sql",
+    "drizzle/0014_fix_audit_logs_userid.sql",
+    "drizzle/0015_fix_audit_logs_remove_adminId.sql",
+    "drizzle/0016_add_bannedUntil.sql",
+    "drizzle/0017_fix_reports_add_action.sql",
+    "drizzle/0018_add_announcement_target_users.sql"
+  ],
+  "tables": [
+    {
+      "table": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "openId",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": ["unique"]
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "email",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": ["unique"]
+        },
+        {
+          "name": "loginMethod",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "role",
+          "type": "text",
+          "nullable": false,
+          "default": "user",
+          "constraints": []
+        },
+        {
+          "name": "username",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": ["unique"]
+        },
+        {
+          "name": "passwordHash",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "bio",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "avatarUrl",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "isBanned",
+          "type": "integer",
+          "nullable": false,
+          "default": 0,
+          "constraints": []
+        },
+        {
+          "name": "banReason",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "bannedAt",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "bannedUntil",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        },
+        {
+          "name": "updatedAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        },
+        {
+          "name": "lastSignedIn",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["openId"], ["email"], ["username"]],
+      "indexes": [
+        { "name": "email_idx", "columns": ["email"] },
+        { "name": "username_idx", "columns": ["username"] },
+        { "name": "users_banned_until_idx", "columns": ["bannedUntil"] }
+      ]
+    },
+    {
+      "table": "posts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "contentType",
+          "type": "text",
+          "nullable": false,
+          "default": "plaintext",
+          "constraints": []
+        },
+        {
+          "name": "excerpt",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "published",
+          "type": "integer",
+          "nullable": false,
+          "default": 0,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        },
+        {
+          "name": "categoryId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "scheduledAt",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "featured",
+          "type": "integer",
+          "nullable": false,
+          "default": 0,
+          "constraints": []
+        },
+        {
+          "name": "updatedAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [
+        { "name": "user_id_idx", "columns": ["userId"] },
+        { "name": "published_idx", "columns": ["published"] },
+        { "name": "created_at_idx", "columns": ["createdAt"] }
+      ]
+    },
+    {
+      "table": "comments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "parentId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        },
+        {
+          "name": "updatedAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [
+        { "name": "post_id_idx", "columns": ["postId"] },
+        { "name": "user_id_idx", "columns": ["userId"] },
+        { "name": "parent_id_idx", "columns": ["parentId"] }
+      ]
+    },
+    {
+      "table": "comment_reactions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "commentId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "reactionType",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["commentId", "userId"]],
+      "indexes": [
+        { "name": "comment_reactions_comment_idx", "columns": ["commentId"] },
+        { "name": "comment_reactions_user_idx", "columns": ["userId"] }
+      ]
+    },
+    {
+      "table": "likes",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["postId", "userId"]],
+      "indexes": [
+        { "name": "post_id_idx", "columns": ["postId"] },
+        { "name": "user_id_idx", "columns": ["userId"] }
+      ]
+    },
+    {
+      "table": "tags",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": ["unique"]
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["name"]],
+      "indexes": [{ "name": "name_idx", "columns": ["name"] }]
+    },
+    {
+      "table": "postTags",
+      "columns": [
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "tagId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["postId", "tagId"],
+      "indexes": [
+        { "name": "post_id_idx", "columns": ["postId"] },
+        { "name": "tag_id_idx", "columns": ["tagId"] }
+      ]
+    },
+    {
+      "table": "post_versions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "contentType",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [{ "name": "post_versions_post_idx", "columns": ["postId"] }]
+    },
+    {
+      "table": "follows",
+      "columns": [
+        {
+          "name": "followerId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "followingId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["followerId", "followingId"],
+      "indexes": [
+        { "name": "follower_idx", "columns": ["followerId"] },
+        { "name": "following_idx", "columns": ["followingId"] }
+      ]
+    },
+    {
+      "table": "bookmarks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["userId", "postId"]],
+      "indexes": [
+        { "name": "bookmark_user_idx", "columns": ["userId"] },
+        { "name": "bookmark_post_idx", "columns": ["postId"] }
+      ]
+    },
+    {
+      "table": "post_reactions",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "reactionType",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["postId", "userId"],
+      "indexes": [
+        { "name": "post_reactions_post_idx", "columns": ["postId"] },
+        { "name": "post_reactions_user_idx", "columns": ["userId"] }
+      ]
+    },
+    {
+      "table": "categories",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": ["unique"]
+        },
+        {
+          "name": "slug",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": ["unique"]
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["name"], ["slug"]],
+      "indexes": [
+        { "name": "category_name_idx", "columns": ["name"] },
+        { "name": "category_slug_idx", "columns": ["slug"] }
+      ]
+    },
+    {
+      "table": "notifications",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "actorId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "read",
+          "type": "integer",
+          "nullable": false,
+          "default": 0,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [
+        { "name": "notification_user_idx", "columns": ["userId"] },
+        { "name": "notification_read_idx", "columns": ["read"] }
+      ]
+    },
+    {
+      "table": "post_views",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "postId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "day",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "views",
+          "type": "integer",
+          "nullable": false,
+          "default": 0,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [
+        { "name": "post_views_post_day_idx", "columns": ["postId", "day"] }
+      ]
+    },
+    {
+      "table": "announcements",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "content",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "type",
+          "type": "text",
+          "nullable": false,
+          "default": "info",
+          "constraints": []
+        },
+        {
+          "name": "startDate",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "endDate",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "targetAudience",
+          "type": "text",
+          "nullable": false,
+          "default": "all",
+          "constraints": []
+        },
+        {
+          "name": "targetUserIds",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [
+        { "name": "announcements_type_idx", "columns": ["type"] },
+        { "name": "announcements_start_date_idx", "columns": ["startDate"] }
+      ]
+    },
+    {
+      "table": "audit_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "targetType",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "targetId",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "details",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "ipAddress",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "userAgent",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [
+        { "name": "audit_user_idx", "columns": ["userId"] },
+        { "name": "audit_action_idx", "columns": ["action"] },
+        { "name": "audit_target_idx", "columns": ["targetType", "targetId"] },
+        { "name": "audit_created_at_idx", "columns": ["createdAt"] }
+      ]
+    },
+    {
+      "table": "reports",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "targetType",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "targetId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false,
+          "default": "open",
+          "constraints": []
+        },
+        {
+          "name": "resolvedBy",
+          "type": "integer",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "resolvedAt",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "action",
+          "type": "text",
+          "nullable": true,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "indexes": [
+        { "name": "report_user_idx", "columns": ["userId"] },
+        { "name": "report_target_idx", "columns": ["targetType", "targetId"] },
+        { "name": "report_status_idx", "columns": ["status"] },
+        { "name": "report_created_at_idx", "columns": ["createdAt"] }
+      ]
+    },
+    {
+      "table": "role_permissions",
+      "columns": [
+        {
+          "name": "role",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "permission",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "grantedAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["role", "permission"],
+      "indexes": [{ "name": "role_perm_role_idx", "columns": ["role"] }]
+    },
+    {
+      "table": "user_permissions",
+      "columns": [
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "permission",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "grantedAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["userId", "permission"],
+      "indexes": [{ "name": "user_perm_user_idx", "columns": ["userId"] }]
+    },
+    {
+      "table": "blocks",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "blockedUserId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["userId", "blockedUserId"]],
+      "indexes": [
+        { "name": "blocks_user_idx", "columns": ["userId"] },
+        { "name": "blocks_blocked_user_idx", "columns": ["blockedUserId"] }
+      ]
+    },
+    {
+      "table": "badges",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": ["unique"]
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "icon",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "requirement",
+          "type": "text",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "createdAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["name"]]
+    },
+    {
+      "table": "user_badges",
+      "columns": [
+        {
+          "name": "id",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": ["primary key"]
+        },
+        {
+          "name": "userId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "badgeId",
+          "type": "integer",
+          "nullable": false,
+          "default": null,
+          "constraints": []
+        },
+        {
+          "name": "earnedAt",
+          "type": "text",
+          "nullable": false,
+          "default": "CURRENT_TIMESTAMP",
+          "constraints": []
+        }
+      ],
+      "primaryKey": ["id"],
+      "uniqueConstraints": [["userId", "badgeId"]],
+      "indexes": [
+        { "name": "user_badges_user_idx", "columns": ["userId"] },
+        { "name": "user_badges_badge_idx", "columns": ["badgeId"] }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "posts",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "comments",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "likes",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "postTags",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "post_versions",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "follows",
+      "fields": ["id"],
+      "references": ["followerId", "followingId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "bookmarks",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "notifications",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "post_views",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "audit_logs",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+    {
+      "source": "users",
+      "relation": "many",
+      "target": "reports",
+      "fields": ["id"],
+      "references": ["userId"]
+    },
+
+    {
+      "source": "posts",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+    {
+      "source": "posts",
+      "relation": "many",
+      "target": "comments",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "posts",
+      "relation": "many",
+      "target": "likes",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "posts",
+      "relation": "many",
+      "target": "postTags",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "posts",
+      "relation": "many",
+      "target": "post_versions",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "posts",
+      "relation": "many",
+      "target": "bookmarks",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "posts",
+      "relation": "many",
+      "target": "post_views",
+      "fields": ["id"],
+      "references": ["postId"]
+    },
+    {
+      "source": "posts",
+      "relation": "many",
+      "target": "reports",
+      "fields": ["id"],
+      "references": ["targetId"]
+    },
+
+    {
+      "source": "comments",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+    {
+      "source": "comments",
+      "relation": "one",
+      "target": "posts",
+      "fields": ["postId"],
+      "references": ["id"]
+    },
+    {
+      "source": "comments",
+      "relation": "one",
+      "target": "comments",
+      "fields": ["parentId"],
+      "references": ["id"]
+    },
+    {
+      "source": "comments",
+      "relation": "many",
+      "target": "comments",
+      "fields": ["id"],
+      "references": ["parentId"]
+    },
+    {
+      "source": "comments",
+      "relation": "many",
+      "target": "likes",
+      "fields": ["id"],
+      "references": ["commentId"]
+    },
+    {
+      "source": "comments",
+      "relation": "many",
+      "target": "reports",
+      "fields": ["id"],
+      "references": ["targetId"]
+    },
+
+    {
+      "source": "likes",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+    {
+      "source": "likes",
+      "relation": "one",
+      "target": "posts",
+      "fields": ["postId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "postTags",
+      "relation": "one",
+      "target": "posts",
+      "fields": ["postId"],
+      "references": ["id"]
+    },
+    {
+      "source": "postTags",
+      "relation": "one",
+      "target": "tags",
+      "fields": ["tagId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "post_versions",
+      "relation": "one",
+      "target": "posts",
+      "fields": ["postId"],
+      "references": ["id"]
+    },
+    {
+      "source": "post_versions",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "follows",
+      "relation": "one",
+      "target": "users",
+      "fields": ["followerId"],
+      "references": ["id"]
+    },
+    {
+      "source": "follows",
+      "relation": "one",
+      "target": "users",
+      "fields": ["followingId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "bookmarks",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+    {
+      "source": "bookmarks",
+      "relation": "one",
+      "target": "posts",
+      "fields": ["postId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "notifications",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "post_views",
+      "relation": "one",
+      "target": "posts",
+      "fields": ["postId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "audit_logs",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "reports",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    },
+    {
+      "source": "reports",
+      "relation": "one",
+      "target": "users",
+      "fields": ["resolvedBy"],
+      "references": ["id"]
+    },
+
+    {
+      "source": "user_permissions",
+      "relation": "one",
+      "target": "users",
+      "fields": ["userId"],
+      "references": ["id"]
+    }
+  ],
+  "notes": "Derived defaults like CURRENT_TIMESTAMP are kept as strings. If you want column-level constraints from migrations merged, I can incorporate SQL migration diffs into the final schema."
+}

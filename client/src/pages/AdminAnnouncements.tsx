@@ -33,7 +33,8 @@ export default function AdminAnnouncements() {
   const [type, setType] = useState<"info" | "warning" | "error" | "success">("info");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [targetAudience, setTargetAudience] = useState<"all" | "new_users" | "admins">("all");
+  const [targetAudience, setTargetAudience] = useState<"all" | "new_users" | "admins" | "specific">("all");
+  const [targetUserIds, setTargetUserIds] = useState("");
 
   const { data: announcements, refetch } = trpc.admin.announcements.list.useQuery();
 
@@ -66,6 +67,7 @@ export default function AdminAnnouncements() {
     setStartDate("");
     setEndDate("");
     setTargetAudience("all");
+    setTargetUserIds("");
   };
 
   const handleCreate = () => {
@@ -74,13 +76,28 @@ export default function AdminAnnouncements() {
       return;
     }
 
+    let parsedUserIds: number[] | undefined = undefined;
+    if (targetAudience === "specific" && targetUserIds.trim()) {
+      try {
+        parsedUserIds = targetUserIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+        if (parsedUserIds.length === 0) {
+          toast.error("Please enter valid user IDs (comma-separated numbers)");
+          return;
+        }
+      } catch (e) {
+        toast.error("Invalid user IDs format");
+        return;
+      }
+    }
+
     createMutation.mutate({
       title,
       content,
       type,
       startDate: startDate || undefined,
       endDate: endDate || undefined,
-      targetAudience,
+      targetAudience: targetAudience === "specific" ? "all" : targetAudience,
+      targetUserIds: parsedUserIds ? JSON.stringify(parsedUserIds) : undefined,
     });
   };
 
@@ -235,10 +252,25 @@ export default function AdminAnnouncements() {
                     <SelectItem value="all">All Users</SelectItem>
                     <SelectItem value="new_users">New Users</SelectItem>
                     <SelectItem value="admins">Admins Only</SelectItem>
+                    <SelectItem value="specific">Specific Users</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+            {targetAudience === "specific" && (
+              <div>
+                <label className="text-sm font-medium mb-2 block">User IDs (comma-separated)</label>
+                <Input
+                  placeholder="1, 2, 3, 4"
+                  value={targetUserIds}
+                  onChange={(e) => setTargetUserIds(e.target.value)}
+                  className="border-2 border-black"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Enter user IDs separated by commas (e.g., 1, 5, 10)
+                </p>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Start Date (Optional)</label>
