@@ -1,6 +1,6 @@
 import { useAuthState } from "@/hooks/useAuthState";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { 
   Shield, 
@@ -127,6 +127,7 @@ export default function AdminHeader({ title, showBack = true, backUrl, children 
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-2 rounded-lg px-3 h-9 hover:bg-gray-100 transition-colors border-2 border-black sketch-shadow-sm">
                 <Avatar className="h-6 w-6 border-2 border-black">
+                  <AvatarImage src={user?.avatarUrl || undefined} />
                   <AvatarFallback className="bg-gray-200 text-black font-bold text-xs">
                     {user?.name?.charAt(0).toUpperCase() || user?.email?.charAt(0).toUpperCase() || "A"}
                   </AvatarFallback>

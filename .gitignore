@@ -171,7 +171,8 @@ screenshots/
 *.sublime-workspace
 *.sublime-project
 
-# Ignore all markdown docs except README (keeps README.md tracked)
-**/*.md
-!**/README.md
+# Keep markdown docs tracked (previous rule that ignored all .md was removed)
+# Rust build outputs
+server-rust/target/
+target/
 

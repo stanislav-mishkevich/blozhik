@@ -24,7 +24,7 @@ export const systemRouter = router({
 
   sitemap: publicProcedure
     .query(async () => {
-      const baseUrl = 'http://localhost:3000';
+      const baseUrl = ENV.baseUrl;
       const posts = await db.getPublishedPosts({ limit: 1000, offset: 0 });
       const usersData = await db.getUsers({ limit: 1000 });
       
@@ -55,7 +55,7 @@ export const systemRouter = router({
 
   robots: publicProcedure
     .query(() => {
-      const baseUrl = 'http://localhost:3000';
+      const baseUrl = ENV.baseUrl;
       let txt = 'User-agent: *\n';
       txt += 'Allow: /\n';
       txt += 'Disallow: /admin\n';

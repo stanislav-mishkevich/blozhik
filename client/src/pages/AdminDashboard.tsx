@@ -70,12 +70,17 @@ export default function AdminDashboard() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div className="bg-white dark:bg-gray-900 border-2 border-black dark:border-white rounded-lg p-6 sketch-shadow">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-bold text-gray-600 dark:text-gray-400">Total Users</p>
                   <p className="text-3xl font-black text-black dark:text-white mt-2">{stats.totalUsers || 0}</p>
+                  {stats.newUsersLast7Days > 0 && (
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                      +{stats.newUsersLast7Days} this week
+                    </p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-black dark:bg-white rounded-lg flex items-center justify-center">
                   <Users className="h-6 w-6 text-white dark:text-black" />
@@ -88,6 +93,11 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm font-bold text-gray-600 dark:text-gray-400">Total Posts</p>
                   <p className="text-3xl font-black text-black dark:text-white mt-2">{stats.totalPosts || 0}</p>
+                  {stats.totalUsers > 0 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {(stats.totalPosts / stats.totalUsers).toFixed(1)} per user
+                    </p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-black dark:bg-white rounded-lg flex items-center justify-center">
                   <FileText className="h-6 w-6 text-white dark:text-black" />
@@ -100,6 +110,11 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm font-bold text-gray-600 dark:text-gray-400">Total Comments</p>
                   <p className="text-3xl font-black text-black dark:text-white mt-2">{stats.totalComments || 0}</p>
+                  {stats.totalPosts > 0 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {(stats.totalComments / stats.totalPosts).toFixed(1)} per post
+                    </p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-black dark:bg-white rounded-lg flex items-center justify-center">
                   <MessageCircle className="h-6 w-6 text-white dark:text-black" />
@@ -112,9 +127,57 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm font-bold text-gray-600 dark:text-gray-400">Total Likes</p>
                   <p className="text-3xl font-black text-black dark:text-white mt-2">{stats.totalLikes || 0}</p>
+                  {stats.totalPosts > 0 && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {(stats.totalLikes / stats.totalPosts).toFixed(1)} per post
+                    </p>
+                  )}
                 </div>
                 <div className="w-12 h-12 bg-black dark:bg-white rounded-lg flex items-center justify-center">
                   <span className="text-2xl">❤️</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Stats Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-blue-700 dark:text-blue-300">Active Users</p>
+                  <p className="text-2xl font-black text-blue-900 dark:text-blue-100 mt-2">{stats.activeUsersLast7Days || 0}</p>
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">Last 7 days</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-yellow-700 dark:text-yellow-300">Pending Reports</p>
+                  <p className="text-2xl font-black text-yellow-900 dark:text-yellow-100 mt-2">{stats.pendingReports || 0}</p>
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Needs attention</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-red-700 dark:text-red-300">Banned Users</p>
+                  <p className="text-2xl font-black text-red-900 dark:text-red-100 mt-2">{stats.bannedUsers || 0}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400 mt-1">Currently banned</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/20 border-2 border-green-500 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-bold text-green-700 dark:text-green-300">New Users</p>
+                  <p className="text-2xl font-black text-green-900 dark:text-green-100 mt-2">{stats.newUsersLast7Days || 0}</p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-1">This week</p>
                 </div>
               </div>
             </div>

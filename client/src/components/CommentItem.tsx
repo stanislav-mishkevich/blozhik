@@ -2,7 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuthState } from "@/hooks/useAuthState";
 import { useLocation } from "wouter";
 import { Trash2, MessageCircle, Smile } from "lucide-react";
@@ -158,6 +158,7 @@ export default function CommentItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-start gap-3 mb-2">
             <Avatar className="h-8 w-8 border-2 border-black">
+              <AvatarImage src={author.avatarUrl || undefined} />
               <AvatarFallback className="bg-gray-200 text-black font-semibold text-xs">
                 {getInitials(author.name, author.username)}
               </AvatarFallback>

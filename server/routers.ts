@@ -215,7 +215,7 @@ export const appRouter = router({
         username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, hyphens and underscores').optional(),
         name: z.string().max(100).optional(),
         bio: z.string().max(500).optional(),
-        avatarUrl: z.string().url().optional(),
+        avatarUrl: z.string().optional(), // Allow both URLs and data URLs
       }))
       .mutation(async ({ ctx, input }) => {
         if (input.username) {
@@ -825,6 +825,14 @@ export const appRouter = router({
         return await db.getBookmarksForUser(userId);
       }),
   }),
+
+  // ============= ANNOUNCEMENT ROUTER (PUBLIC) =============
+  announcement: router({
+    getActive: publicProcedure
+      .query(async ({ ctx }) => {
+        return await db.getActiveAnnouncements(ctx.user?.id);
+      }),
+  }),
   
   // ============= TAG ROUTER =============
   tag: router({
@@ -900,13 +908,19 @@ export const appRouter = router({
         await db.markNotificationRead(input.notificationId);
         return { success: true };
       }),
+    delete: protectedProcedure
+      .input(z.object({ notificationId: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteNotification(input.notificationId);
+        return { success: true };
+      }),
     unreadCount: protectedProcedure
       .query(async ({ ctx }) => {
         return { count: await db.getUnreadNotificationCount(ctx.user.id) };
       }),
     clearAll: protectedProcedure
       .mutation(async ({ ctx }) => {
-        await db.markAllNotificationsRead(ctx.user.id);
+        await db.deleteAllNotifications(ctx.user.id);
         return { success: true };
       }),
   }),
@@ -1236,6 +1250,11 @@ export const appRouter = router({
         .query(async ({ ctx, input }) => {
           return await db.getAdminStatsEngagement(input.days ?? 30);
         }),
+      userMetrics: adminProcedure
+        .input(z.object({ days: z.number().optional() }))
+        .query(async ({ ctx, input }) => {
+          return await db.getAdminStatsUserMetrics(input.days ?? 30);
+        }),
     }),
 
     // Audit Logs
@@ -1293,6 +1312,7 @@ export const appRouter = router({
           startDate: z.string().optional(),
           endDate: z.string().optional(),
           targetAudience: z.enum(['all', 'new_users', 'admins']).optional(),
+          targetUserIds: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
           // TODO: Log to audit
@@ -1307,6 +1327,7 @@ export const appRouter = router({
           startDate: z.string().optional(),
           endDate: z.string().optional(),
           targetAudience: z.enum(['all', 'new_users', 'admins']).optional(),
+          targetUserIds: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
           return await db.updateAnnouncement(input.id, input);

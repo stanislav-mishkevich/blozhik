@@ -1133,6 +1133,18 @@ export async function markAllNotificationsRead(userId: number) {
   await db.update(notifications).set({ read: 1 }).where(eq(notifications.userId, userId));
 }
 
+export async function deleteNotification(notificationId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(notifications).where(eq(notifications.id, notificationId));
+}
+
+export async function deleteAllNotifications(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(notifications).where(eq(notifications.userId, userId));
+}
+
 export async function getUnreadNotificationCount(userId: number) {
   const db = await getDb();
   if (!db) return 0;
@@ -1392,6 +1404,7 @@ export async function getUsers(filters: { page?: number; limit?: number; search?
     isBanned: users.isBanned,
     banReason: users.banReason,
     bannedAt: users.bannedAt,
+    bannedUntil: users.bannedUntil,
     createdAt: users.createdAt,
     lastSignedIn: users.lastSignedIn,
   }).from(users);
@@ -1420,9 +1433,26 @@ export async function getUsers(filters: { page?: number; limit?: number; search?
   }
 
   const usersList = await query.limit(limit).offset(offset).orderBy(desc(users.createdAt));
+  
+  // Check for expired bans and auto-unban
+  const now = new Date();
+  const updatedUsers = await Promise.all(
+    usersList.map(async (user) => {
+      if (user.isBanned && user.bannedUntil) {
+        const expiryDate = new Date(user.bannedUntil);
+        if (now >= expiryDate) {
+          // Auto-unban
+          await unbanUser(user.id);
+          return { ...user, isBanned: 0, banReason: null, bannedAt: null, bannedUntil: null };
+        }
+      }
+      return user;
+    })
+  );
+  
   const total = await db.select({ count: count() }).from(users);
 
-  return { users: usersList, total: total[0].count };
+  return { users: updatedUsers, total: total[0].count };
 }
 
 export async function changeUserRole(userId: number, role: string) {
@@ -1497,14 +1527,14 @@ export async function getAdminStatistics() {
   const totalLikes = Number(likesCount[0].count) + Number(reactionsCount[0].count);
   
   // Banned users count
-  const bannedCount = await db.select({ count: count() }).from(users).where(eq(users.isBanned, true));
+  const bannedCount = await db.select({ count: count() }).from(users).where(eq(users.isBanned, 1));
   
   // Active users in last 7 days (users who created posts, comments, or likes)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sevenDaysAgoIso = sevenDaysAgo.toISOString();
   
-  const activeUsersFromPosts = await db.selectDistinct({ userId: posts.authorId }).from(posts).where(sql`${posts.createdAt} >= ${sevenDaysAgoIso}`);
+  const activeUsersFromPosts = await db.selectDistinct({ userId: posts.userId }).from(posts).where(sql`${posts.createdAt} >= ${sevenDaysAgoIso}`);
   const activeUsersFromComments = await db.selectDistinct({ userId: comments.userId }).from(comments).where(sql`${comments.createdAt} >= ${sevenDaysAgoIso}`);
   const activeUsersFromLikes = await db.selectDistinct({ userId: likes.userId }).from(likes).where(sql`${likes.createdAt} >= ${sevenDaysAgoIso}`);
   
@@ -1592,9 +1622,105 @@ export async function getAdminStatsEngagement(days: number = 30) {
   const totalCommentsRes = await db.select({ totalComments: sql<number>`count(*)` }).from(comments).innerJoin(posts, eq(comments.postId, posts.id)).where(sql`${posts.createdAt} >= ${sinceIso}`);
   const totalComments = Number(totalCommentsRes[0]?.totalComments || 0);
 
+  // Top categories
+  const topCategoriesRes = await db.select({
+    categoryId: posts.categoryId,
+    categoryName: categories.name,
+    count: sql<number>`count(*)`
+  })
+    .from(posts)
+    .innerJoin(categories, eq(posts.categoryId, categories.id))
+    .where(sql`${posts.createdAt} >= ${sinceIso}`)
+    .groupBy(posts.categoryId, categories.name)
+    .orderBy(sql`count(*) DESC`)
+    .limit(5);
+
+  const topCategories = topCategoriesRes.map(cat => ({
+    name: cat.categoryName,
+    count: Number(cat.count)
+  }));
+
+  // Most active hour (posts created)
+  const hourActivityRes = await db.select({
+    hour: sql<number>`CAST(strftime('%H', ${posts.createdAt}) AS INTEGER)`,
+    count: sql<number>`count(*)`
+  })
+    .from(posts)
+    .where(sql`${posts.createdAt} >= ${sinceIso}`)
+    .groupBy(sql`strftime('%H', ${posts.createdAt})`)
+    .orderBy(sql`count(*) DESC`)
+    .limit(1);
+
+  const mostActiveHour = hourActivityRes.length > 0 ? Number(hourActivityRes[0].hour) : 14;
+
   return {
     avgLikesPerPost: totalPosts > 0 ? totalLikes / totalPosts : 0,
     avgCommentsPerPost: totalPosts > 0 ? totalComments / totalPosts : 0,
+    topCategories,
+    mostActiveHour,
+  };
+}
+
+export async function getAdminStatsUserMetrics(days: number = 30) {
+  const db = await getDb();
+  if (!db) return {
+    retentionRate: 0,
+    churnRate: 0,
+    newUsersPerDay: 0,
+    avgPostsPerUser: 0,
+    avgCommentsPerUser: 0,
+  };
+
+  const since = new Date();
+  since.setDate(since.getDate() - days);
+  const sinceIso = since.toISOString();
+
+  // Total users and new users in period
+  const totalUsersRes = await db.select({ count: sql<number>`count(*)` }).from(users);
+  const totalUsers = Number(totalUsersRes[0]?.count || 0);
+
+  const newUsersRes = await db.select({ count: sql<number>`count(*)` }).from(users).where(sql`${users.createdAt} >= ${sinceIso}`);
+  const newUsers = Number(newUsersRes[0]?.count || 0);
+
+  // Active users in period (posted, commented, or liked)
+  const activeUsersFromPosts = await db.selectDistinct({ userId: posts.userId }).from(posts).where(sql`${posts.createdAt} >= ${sinceIso}`);
+  const activeUsersFromComments = await db.selectDistinct({ userId: comments.userId }).from(comments).where(sql`${comments.createdAt} >= ${sinceIso}`);
+  const activeUsersFromLikes = await db.selectDistinct({ userId: likes.userId }).from(likes).where(sql`${likes.createdAt} >= ${sinceIso}`);
+  
+  const uniqueActiveUsers = new Set([
+    ...activeUsersFromPosts.map(u => u.userId),
+    ...activeUsersFromComments.map(u => u.userId),
+    ...activeUsersFromLikes.map(u => u.userId)
+  ]);
+
+  const activeUsers = uniqueActiveUsers.size;
+
+  // Calculate retention (active users / total users who could be active)
+  const usersBeforePeriod = totalUsers - newUsers;
+  const retentionRate = usersBeforePeriod > 0 ? (activeUsers / usersBeforePeriod) * 100 : 0;
+
+  // Calculate churn (users who didn't engage)
+  const churnRate = usersBeforePeriod > 0 ? ((usersBeforePeriod - activeUsers) / usersBeforePeriod) * 100 : 0;
+
+  // New users per day
+  const newUsersPerDay = newUsers / days;
+
+  // Average posts and comments per user
+  const totalPostsRes = await db.select({ count: sql<number>`count(*)` }).from(posts);
+  const totalPosts = Number(totalPostsRes[0]?.count || 0);
+
+  const totalCommentsRes = await db.select({ count: sql<number>`count(*)` }).from(comments);
+  const totalComments = Number(totalCommentsRes[0]?.count || 0);
+
+  const avgPostsPerUser = totalUsers > 0 ? totalPosts / totalUsers : 0;
+  const avgCommentsPerUser = totalUsers > 0 ? totalComments / totalUsers : 0;
+
+  return {
+    retentionRate: Number(retentionRate.toFixed(1)),
+    churnRate: Number(churnRate.toFixed(1)),
+    newUsersPerDay: Number(newUsersPerDay.toFixed(2)),
+    avgPostsPerUser: Number(avgPostsPerUser.toFixed(2)),
+    avgCommentsPerUser: Number(avgCommentsPerUser.toFixed(2)),
   };
 }
 
@@ -1731,7 +1857,51 @@ export async function getAnnouncements() {
   return db.select().from(announcements).orderBy(desc(announcements.createdAt));
 }
 
-export async function createAnnouncement(input: { title: string; content: string; type: string; startDate?: string; endDate?: string; targetAudience?: string }) {
+export async function getActiveAnnouncements(userId?: number) {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const now = new Date().toISOString();
+  const allAnnouncements = await db.select().from(announcements).orderBy(desc(announcements.createdAt));
+  
+  // Filter active announcements
+  return allAnnouncements.filter(announcement => {
+    // Check date range
+    const isActive = 
+      (!announcement.startDate || announcement.startDate <= now) &&
+      (!announcement.endDate || announcement.endDate >= now);
+    
+    if (!isActive) return false;
+    
+    // Check target audience
+    if (announcement.targetAudience === 'all') return true;
+    
+    // Check if specific users are targeted
+    if (announcement.targetUserIds) {
+      try {
+        const targetIds = JSON.parse(announcement.targetUserIds);
+        if (Array.isArray(targetIds) && userId && targetIds.includes(userId)) {
+          return true;
+        }
+      } catch (e) {
+        console.error('Failed to parse targetUserIds', e);
+      }
+    }
+    
+    if (announcement.targetAudience === 'admins' && userId) {
+      // TODO: check if user is admin
+      return false; // For now, skip admin-only announcements in public API
+    }
+    if (announcement.targetAudience === 'new_users' && userId) {
+      // TODO: check if user is new (e.g., created within last 7 days)
+      return true;
+    }
+    
+    return announcement.targetAudience === 'all';
+  });
+}
+
+export async function createAnnouncement(input: { title: string; content: string; type: string; startDate?: string; endDate?: string; targetAudience?: string; targetUserIds?: string }) {
   const db = await getDb();
   if (!db) throw new Error('Database not available');
   const [result] = await db.insert(announcements).values(input).returning();

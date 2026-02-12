@@ -118,10 +118,6 @@ export function Header() {
                       <BookMarked className="h-4 w-4 mr-2" />
                       Bookmarks
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setLocation('/analytics')}>
-                      <Award className="h-4 w-4 mr-2" />
-                      Analytics
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setLocation("/settings")}>
                       <Settings className="h-4 w-4 mr-2" />
                       Settings

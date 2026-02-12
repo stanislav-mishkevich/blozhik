@@ -1,0 +1,14 @@
+/Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/deps/serde-73f97d3d3f5500f5.d: /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/build/serde-4a5d3d50f1235b70/out/private.rs
+
+/Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/deps/libserde-73f97d3d3f5500f5.rlib: /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/build/serde-4a5d3d50f1235b70/out/private.rs
+
+/Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/deps/libserde-73f97d3d3f5500f5.rmeta: /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/build/serde-4a5d3d50f1235b70/out/private.rs
+
+/Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/admin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/build/serde-4a5d3d50f1235b70/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/admin/Documents/VSC/blog/blozhik/server-rust/target/debug/build/serde-4a5d3d50f1235b70/out
